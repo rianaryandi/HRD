@@ -1,5 +1,5 @@
 // Vercel Serverless Function — proxy ke PeopleBond HCMS
-// Path: /api/proxy?path=/?ajaxoffices=1
+// Path: /api/proxy.js?path=/?ajaxoffices=1
 // WAJIB: forward Cookie + Set-Cookie agar session peoplebond / officeqr hidup.
 
 const https = require('https');
@@ -77,47 +77,49 @@ module.exports = (req, res) => {
   const proxyReq = https.request(options, (proxyRes) => {
     res.statusCode = proxyRes.statusCode || 200;
 
-    // Content-Type (penting untuk PNG QR)
-    const ct = proxyRes.headers['content-type'];
-    if (ct) res.setHeader('Content-Type', ct);
-
     // Cache-Control — QR jangan di-cache
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
 
     // --- Set-Cookie: bersihkan Domain, paksa Path=/, SameSite=None; Secure ---
-    // Supaya cookie tersimpan di domain Vercel (hrd-gedo.vercel.app)
     let rawCookies = proxyRes.headers['set-cookie'];
     if (rawCookies) {
       if (!Array.isArray(rawCookies)) rawCookies = [rawCookies];
 
       const cleaned = rawCookies.map((cookie) => {
         let c = String(cookie)
-          // buang Domain=... (biar berlaku di host Vercel)
           .replace(/;\s*Domain=[^;]*/gi, '')
-          // buang SameSite lama (akan diganti)
           .replace(/;\s*SameSite=[^;]*/gi, '')
-          // buang Secure lama (akan ditambah ulang)
           .replace(/;\s*Secure/gi, '')
-          // pastikan Path=/
           .replace(/;\s*Path=[^;]*/gi, '');
-
-        // Tambah atribut yang aman untuk HTTPS + cross-site fetch
         c += '; Path=/; SameSite=None; Secure';
         return c;
       });
 
-      // setHeader dengan array → Node mengirim beberapa header Set-Cookie
       res.setHeader('Set-Cookie', cleaned);
     }
 
-    // Header lain yang aman diteruskan
-    const passHeaders = ['content-length', 'content-disposition', 'last-modified', 'etag'];
-    for (const h of passHeaders) {
-      if (proxyRes.headers[h]) res.setHeader(h, proxyRes.headers[h]);
-    }
+    // Buffer body: PeopleBond sering kirim PNG dengan Content-Type: text/html.
+    // Deteksi magic bytes lalu set Content-Type yang benar.
+    const chunks = [];
+    proxyRes.on('data', (chunk) => chunks.push(chunk));
+    proxyRes.on('end', () => {
+      const body = Buffer.concat(chunks);
+      let ct = proxyRes.headers['content-type'] || 'application/octet-stream';
 
-    // Pipe body (HTML / PNG / apapun) langsung
-    proxyRes.pipe(res);
+      if (body.length >= 8) {
+        if (body[0] === 0x89 && body[1] === 0x50 && body[2] === 0x4e && body[3] === 0x47) {
+          ct = 'image/png';
+        } else if (body[0] === 0xff && body[1] === 0xd8 && body[2] === 0xff) {
+          ct = 'image/jpeg';
+        } else if (body[0] === 0x47 && body[1] === 0x49 && body[2] === 0x46) {
+          ct = 'image/gif';
+        }
+      }
+
+      res.setHeader('Content-Type', ct);
+      res.setHeader('Content-Length', String(body.length));
+      res.end(body);
+    });
   });
 
   proxyReq.on('error', (err) => {
