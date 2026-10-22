@@ -1,5 +1,5 @@
 // Vercel Serverless Function — proxy ke PeopleBond HCMS
-// Path: /api/proxy.js?path=/?ajaxoffices=1
+// Path: /api/proxy?path=/?ajaxoffices=1
 // WAJIB: forward Cookie + Set-Cookie agar session peoplebond / officeqr hidup.
 
 const https = require('https');
