@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "api/proxy.mjs": {
+    "api/proxy.js": {
       "runtime": "edge"
     }
   }
