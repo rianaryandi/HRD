@@ -3,146 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SYSTEM // ATTENDANCE</title>
+    <title>Absensi HRD Gedo</title>
     <style>
-        :root {
-            --terminal-green: #00ff41;
-            --terminal-dark: #0a0a0a;
-            --terminal-darker: #000000;
-            --terminal-gray: #222222;
-            --terminal-text: #cccccc;
-            --terminal-border: #333333;
-            --terminal-red: #ff4444;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', Courier, monospace; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         
         body {
-            background: var(--terminal-darker);
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(transparent 50%, rgba(0, 0, 0, 0.15) 50%);
-            background-size: 100% 4px;
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.25;
         }
 
         .container {
-            background: transparent;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 420px;
-            padding: 20px;
+            padding: 30px 25px;
+            text-align: center;
+        }
+
+        .header-icon { font-size: 40px; margin-bottom: 10px; }
+        h1 { color: #00695c; font-size: 26px; margin-bottom: 5px; }
+        h1 span { color: #f57c00; }
+        .subtitle { color: #666; font-size: 15px; margin-bottom: 35px; line-height: 1.5; }
+
+        .feature-card {
+            background: #f8fafa;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 14px;
             text-align: left;
-            position: relative;
-            z-index: 1;
+            border: 1px solid #eee;
         }
+        .feature-title { font-weight: 600; color: #333; font-size: 16px; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+        .feature-desc { font-size: 13px; color: #888; margin-left: 34px; }
+        .feature-icon { font-size: 20px; }
 
-        .header-line {
-            color: #555;
-            font-size: 12px;
-            margin-bottom: 5px;
-        }
-
-        .top-badge {
-            display: inline-block;
-            color: var(--terminal-green);
-            font-size: 13px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            border: 1px solid var(--terminal-green);
-            padding: 6px 16px;
-            margin-bottom: 25px;
-        }
-
-        h1 {
-            font-size: 22px;
-            color: var(--terminal-green);
-            margin-bottom: 5px;
-        }
-
-        .subtitle {
-            color: #666;
-            font-size: 13px;
-            margin-bottom: 30px;
-            line-height: 1.6;
-        }
-
-        .main-btn {
-            background: transparent;
-            color: var(--terminal-green);
-            border: 1px solid var(--terminal-green);
-            padding: 12px 30px;
-            font-size: 14px;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
+        .btn-primary {
             width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .main-btn:hover {
-            background: var(--terminal-green);
-            color: #000;
-        }
-
-        .status-line {
-            font-size: 12px;
-            color: #555;
-            margin-bottom: 30px;
-        }
-
-        .status-badge {
-            color: var(--terminal-green);
-            font-weight: bold;
-        }
-        .status-badge.error { color: var(--terminal-red); }
-
-        .card {
-            border: 1px solid var(--terminal-border);
             padding: 15px;
-            margin-bottom: 10px;
-            transition: all 0.2s ease;
+            background: #00897b;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
         }
+        .btn-primary:hover { background: #00796b; transform: translateY(-1px); }
+        .btn-primary:disabled { background: #4db6ac; cursor: not-allowed; transform: none; }
 
-        .card:hover {
-            border-color: var(--terminal-green);
-        }
-
-        .card-icon {
-            color: var(--terminal-green);
-            font-size: 16px;
-            margin-right: 10px;
-        }
-
-        .card-title {
-            color: var(--terminal-text);
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .card-desc {
-            color: #555;
-            font-size: 12px;
-            margin-top: 5px;
-            padding-left: 26px;
-        }
-
+        /* Modal PIN */
         .modal-overlay {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -150,55 +74,74 @@
             z-index: 100;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.2s ease;
+            transition: all 0.3s;
         }
-
         .modal-overlay.active { opacity: 1; visibility: visible; }
-
         .modal {
-            background: var(--terminal-dark);
-            border: 1px solid var(--terminal-green);
+            background: white;
+            border-radius: 20px;
             padding: 30px 25px;
             width: 100%;
-            max-width: 340px;
+            max-width: 360px;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+        .modal-overlay.active .modal { transform: translateY(0); }
+        .modal-icon { font-size: 40px; color: #00897b; margin-bottom: 10px; }
+        .modal h2 { font-size: 22px; color: #333; margin-bottom: 5px; }
+        .modal .office-name { color: #666; font-size: 15px; margin-bottom: 25px; }
+        .pin-input-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .pin-box {
+            width: 45px;
+            height: 50px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 22px;
             text-align: center;
+            font-weight: 600;
+            color: #333;
         }
+        .pin-box:focus { outline: none; border-color: #00897b; }
+        .modal-buttons { display: flex; gap: 12px; }
+        .btn-secondary {
+            flex: 1;
+            padding: 13px;
+            background: #f0f0f0;
+            color: #555;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .btn-verify {
+            flex: 1;
+            padding: 13px;
+            background: #4db6ac;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-verify.active { background: #00897b; }
+        .btn-verify:disabled { background: #ccc; cursor: not-allowed; }
 
-        .modal-lock { font-size: 28px; color: var(--terminal-green); margin-bottom: 10px; }
-        .modal h2 { font-size: 18px; color: var(--terminal-green); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-        .modal-office { color: #666; font-size: 13px; margin-bottom: 25px; }
-
-        .pin-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; }
-        .pin-dot {
-            width: 12px; height: 12px;
-            border: 1px solid #444;
-            background: #111;
-            transition: all 0.15s ease;
-        }
-        .pin-dot.filled {
-            background: var(--terminal-green);
-            border-color: var(--terminal-green);
-            box-shadow: 0 0 6px var(--terminal-green);
-        }
-        .pin-input { position: absolute; opacity: 0; pointer-events: none; }
-
-        .modal-buttons { display: flex; gap: 10px; }
-        .btn-batal {
-            flex: 1; padding: 10px; background: transparent; color: #777; border: 1px solid #444;
-            font-size: 13px; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase;
-        }
-        .btn-batal:hover { border-color: var(--terminal-red); color: var(--terminal-red); }
-        .btn-ok {
-            flex: 1; padding: 10px; background: transparent; color: var(--terminal-green); border: 1px solid var(--terminal-green);
-            font-size: 13px; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase;
-        }
-        .btn-ok.active:hover { background: var(--terminal-green); color: #000; }
-        .btn-ok:disabled { border-color: #333; color: #444; cursor: not-allowed; }
-
-        .qr-modal {
+        /* QR Page */
+        .qrcode-page {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -206,372 +149,383 @@
             z-index: 200;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
-        .qr-modal.active { opacity: 1; visibility: visible; }
-
-        .qr-card {
-            background: var(--terminal-dark);
-            border: 1px solid var(--terminal-green);
-            padding: 25px;
+        .qrcode-page.active { opacity: 1; visibility: visible; }
+        .qr-container {
+            background: white;
+            border-radius: 24px;
+            padding: 30px 25px;
             width: 100%;
-            max-width: 340px;
+            max-width: 360px;
             text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
         }
-
         .live-badge {
-            display: inline-block;
-            color: var(--terminal-green);
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border: 1px solid var(--terminal-green);
-            padding: 4px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
             margin-bottom: 15px;
         }
         .live-dot {
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            background: var(--terminal-green);
+            width: 8px;
+            height: 8px;
+            background: #4caf50;
             border-radius: 50%;
-            margin-right: 6px;
-            animation: pulse 1.5s infinite;
+            animation: pulse 2s infinite;
         }
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.2; }
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.4; }
         }
-
-        .qr-card h2 { font-size: 15px; color: var(--terminal-green); margin-bottom: 5px; text-transform: uppercase; }
-        .qr-date { font-size: 11px; color: #555; margin-bottom: 20px; }
-
-        .qr-img-container {
-            background: #000;
-            border: 1px dashed #333;
+        .qr-container h2 { font-size: 20px; color: #333; margin-bottom: 5px; }
+        .qr-subtitle { font-size: 14px; color: #888; margin-bottom: 25px; }
+        
+        .qrcode-wrapper {
+            background: #fafafa;
+            border-radius: 12px;
             padding: 20px;
             margin-bottom: 15px;
-            min-height: 200px;
+            min-height: 220px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .qr-img-container img { max-width: 180px; width: 100%; filter: invert(1) hue-rotate(60deg); }
-        .qr-placeholder { color: #444; font-size: 12px; }
-
-        .qr-time { font-size: 18px; font-weight: bold; color: var(--terminal-green); margin-bottom: 5px; letter-spacing: 2px; }
-        .qr-status { font-size: 11px; color: #555; margin-bottom: 20px; }
-
-        .btn-tutup {
-            background: transparent;
-            color: #666;
-            border: 1px solid #444;
-            padding: 8px 20px;
-            font-size: 12px;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.2s ease;
-        }
-        .btn-tutup:hover { border-color: var(--terminal-red); color: var(--terminal-red); }
-
-        .select-modal {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            z-index: 150;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.2s ease;
-        }
-        .select-modal.active { opacity: 1; visibility: visible; }
-        .select-modal .modal { text-align: left; }
-        .select-modal h3 { text-align: center; font-size: 15px; color: var(--terminal-green); margin-bottom: 20px; text-transform: uppercase; }
-
-        select {
+        .qrcode-wrapper img {
+            max-width: 220px;
             width: 100%;
-            padding: 10px;
-            background: #000;
-            color: var(--terminal-green);
-            border: 1px solid #444;
+            border-radius: 6px;
+        }
+        .qrcode-wrapper .placeholder {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .time-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .status-text {
             font-size: 13px;
-            margin-bottom: 20px;
+            color: #666;
+            margin-bottom: 25px;
+        }
+        .btn-close {
+            background: #e0e0e0;
+            color: #444;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-size: 15px;
             cursor: pointer;
         }
-        select:focus { outline: none; border-color: var(--terminal-green); }
-        select option { background: #111; color: #ccc; }
 
         .hidden { display: none !important; }
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #ddd;
+            border-top-color: #00897b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Select dropdown */
+        .select-wrapper {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            background: white;
+            appearance: none;
+            cursor: pointer;
+        }
+        select:focus { outline: none; border-color: #00897b; }
+        .select-arrow {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #888;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header-line">root@anonymous:~# ./system --init</div>
-        <div class="top-badge">SYSTEM ONLINE</div>
-        <h1>ATTENDANCE <span>TERMINAL</span></h1>
-        <p class="subtitle">// akses sistem otorisasi · verifikasi identitas · generate token</p>
-        
-        <button class="main-btn" id="startBtn">[ INISIALISASI ]</button>
-        <p class="status-line">status: <span class="status-badge" id="statusText">menghubungkan...</span></p>
-        
-        <div class="card">
-            <span class="card-icon">▸</span>
-            <span class="card-title">PILIH LOKASI</span>
-            <p class="card-desc">// pilih unit terdaftar dalam sistem</p>
+    <!-- Halaman Utama -->
+    <div class="container" id="mainPage">
+        <div class="header-icon">📱</div>
+        <h1>Absensi HRD <span>Gedo</span></h1>
+        <p class="subtitle">Pilih lokasi office, masukkan PIN, dan QR Code muncul seketika — diperbarui otomatis setiap 3 detik.</p>
+
+        <button class="btn-primary" id="startBtn">▶ QR Attendance</button>
+        <p style="margin-top: 15px; font-size: 13px; color: #888;" id="statusText">Siap — klik tombol di atas untuk mulai</p>
+
+        <div class="feature-card" style="margin-top: 30px;">
+            <div class="feature-title"><span class="feature-icon">📍</span> Pilih Lokasi</div>
+            <p class="feature-desc">Cari & pilih outlet tempat absensi</p>
         </div>
-        <div class="card">
-            <span class="card-icon">▸</span>
-            <span class="card-title">KODE OTORISASI</span>
-            <p class="card-desc">// masukkan kunci akses 6 digit</p>
+        <div class="feature-card">
+            <div class="feature-title"><span class="feature-icon">🔒</span> Masukkan PIN</div>
+            <p class="feature-desc">Verifikasi PIN office 6 digit</p>
         </div>
-        <div class="card">
-            <span class="card-icon">▸</span>
-            <span class="card-title">TOKEN QR</span>
-            <p class="card-desc">// token diperbarui setiap 3 detik</p>
+        <div class="feature-card">
+            <div class="feature-title"><span class="feature-icon">🔄</span> QR Instan</div>
+            <p class="feature-desc">Muncul seketika, auto-refresh 3 detik</p>
         </div>
     </div>
 
-    <div class="select-modal" id="selectModal">
-        <div class="modal">
-            <h3>// PILIH TERMINAL</h3>
-            <select id="officeSelect">
-                <option value="">memuat database...</option>
-            </select>
-            <div class="modal-buttons">
-                <button class="btn-batal" id="selectBatal">[ BATAL ]</button>
-                <button class="btn-ok active" id="selectNext">[ LANJUT ]</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- Modal Pilih Outlet & PIN -->
     <div class="modal-overlay" id="pinModal">
         <div class="modal">
-            <div class="modal-lock">🔒</div>
-            <h2>VERIFIKASI AKSES</h2>
-            <p class="modal-office" id="modalOfficeName"></p>
+            <div class="modal-icon">🔒</div>
+            <h2>PIN Office</h2>
+            <p class="office-name" id="modalOfficeName"></p>
             
-            <div class="pin-dots">
-                <div class="pin-dot" data-index="0"></div>
-                <div class="pin-dot" data-index="1"></div>
-                <div class="pin-dot" data-index="2"></div>
-                <div class="pin-dot" data-index="3"></div>
-                <div class="pin-dot" data-index="4"></div>
-                <div class="pin-dot" data-index="5"></div>
+            <div class="pin-input-container">
+                <input type="password" class="pin-box" maxlength="1" data-index="0">
+                <input type="password" class="pin-box" maxlength="1" data-index="1">
+                <input type="password" class="pin-box" maxlength="1" data-index="2">
+                <input type="password" class="pin-box" maxlength="1" data-index="3">
+                <input type="password" class="pin-box" maxlength="1" data-index="4">
+                <input type="password" class="pin-box" maxlength="1" data-index="5">
             </div>
-            <input type="text" class="pin-input" id="pinInput" maxlength="6" inputmode="numeric">
             
             <div class="modal-buttons">
-                <button class="btn-batal" id="pinBatal">[ BATAL ]</button>
-                <button class="btn-ok" id="pinVerify" disabled>[ KIRIM ]</button>
+                <button class="btn-secondary" id="modalBatal">Batal</button>
+                <button class="btn-verify" id="modalVerifikasi" disabled>Verifikasi</button>
             </div>
         </div>
     </div>
 
-    <div class="qr-modal" id="qrModal">
-        <div class="qr-card">
-            <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+    <!-- Halaman QR Code -->
+    <div class="qrcode-page" id="qrPage">
+        <div class="qr-container">
+            <div class="live-badge"><div class="live-dot"></div> LIVE</div>
             <h2 id="qrOfficeName"></h2>
-            <p class="qr-date" id="qrDate"></p>
+            <p class="qr-subtitle" id="qrDate"></p>
             
-            <div class="qr-img-container">
-                <div class="qr-placeholder" id="qrPlaceholder">// memuat token...</div>
-                <img id="qrImage" style="display:none;" alt="QR Token">
+            <div class="qrcode-wrapper">
+                <div id="qrPlaceholder" class="placeholder">Memuat QR Code...</div>
+                <img id="qrImage" style="display:none;" alt="QR Attendance">
             </div>
             
-            <div class="qr-time" id="qrTime">--:--:--</div>
-            <p class="qr-status" id="qrStatus">// refresh: 3 detik</p>
+            <div class="time-display" id="qrTime">--:--:--</div>
+            <p class="status-text" id="qrStatus">🔄 Memperbarui setiap 3 detik...</p>
             
-            <button class="btn-tutup" id="qrClose">[ KELUAR ]</button>
+            <button class="btn-close" id="qrTutup">Tutup</button>
+        </div>
+    </div>
+
+    <!-- Pilih Outlet Modal -->
+    <div class="modal-overlay" id="selectModal">
+        <div class="modal">
+            <h2 style="margin-bottom: 20px;">Pilih Outlet</h2>
+            <div class="select-wrapper">
+                <select id="officeSelect">
+                    <option value="">Memuat daftar...</option>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-secondary" id="selectBatal">Batal</button>
+                <button class="btn-verify" id="selectLanjut">Lanjut</button>
+            </div>
         </div>
     </div>
 
     <script>
         const API_BASE = '/api/proxy.js?path=';
-        let qrTimer = null;
+        let qrRefreshTimer = null;
         let selectedOfficeId = null;
+        let selectedOfficeName = null;
 
         window.addEventListener('load', () => {
             loadOffices();
-            updateTime();
-            setInterval(updateTime, 1000);
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
         });
 
-        function updateTime() {
+        function updateDateTime() {
             const now = new Date();
             document.getElementById('qrTime').textContent = now.toLocaleTimeString('id-ID', { hour12: false });
             document.getElementById('qrDate').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
         }
 
         async function loadOffices() {
-            const select = document.getElementById('officeSelect');
             try {
-                console.log('> Memuat daftar outlet...');
-                const url = `${API_BASE}?ajaxoffices=1`;
-                console.log('URL:', url);
-                
-                const res = await fetch(url, { cache: 'no-store' });
-                console.log('Status:', res.status);
-                
+                const res = await fetch(`${API_BASE}?ajaxoffices=1`);
                 const text = await res.text();
-                console.log('Respons diterima, panjang:', text.length, 'karakter');
-
-                select.innerHTML = '<option value="">-- pilih unit --</option>';
-
-                if (!text || text.trim() === '') {
-                    select.innerHTML = '<option value="">⚠️ Data kosong — coba ulang</option>';
-                    document.getElementById('statusText').textContent = 'DATA KOSONG';
-                    document.getElementById('statusText').classList.add('error');
-                    return;
-                }
-
-                const regex = /<option\s+[^>]*value=["']?([^"'>]+)["']?[^>]*>([\s\S]*?)<\/option>/gi;
-                let match;
-                let ditemukan = 0;
                 
-                while ((match = regex.exec(text)) !== null) {
-                    const val = match[1].trim();
-                    let txt = match[2].trim();
-                    txt = txt.replace(/<[^>]*>/g, '');
-                    
-                    if (val && val !== '0' && txt) {
-                        select.innerHTML += `<option value="${val}">${txt}</option>`;
-                        ditemukan++;
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+                const options = doc.querySelectorAll('option');
+                const select = document.getElementById('officeSelect');
+                select.innerHTML = '<option value="">-- Pilih Outlet --</option>';
+                
+                options.forEach(opt => {
+                    if (opt.value && opt.value !== '0') {
+                        select.innerHTML += `<option value="${opt.value}">${opt.textContent}</option>`;
                     }
-                }
-
-                if (ditemukan > 0) {
-                    document.getElementById('statusText').textContent = `TERHUBUNG (${ditemukan} unit)`;
-                    console.log(`✅ Berhasil memuat ${ditemukan} unit`);
-                } else {
-                    select.innerHTML = '<option value="">⚠️ Tidak ada data outlet</option>';
-                    document.getElementById('statusText').textContent = 'TIDAK ADA DATA';
-                    document.getElementById('statusText').classList.add('error');
-                }
-
+                });
+                
+                document.getElementById('statusText').textContent = `✅ ${options.length} outlet dimuat`;
             } catch (err) {
-                console.error('> Error:', err);
-                document.getElementById('statusText').textContent = 'KONEKSI GAGAL';
-                document.getElementById('statusText').classList.add('error');
-                select.innerHTML = `<option value="">⚠️ Error: ${err.message}</option>`;
+                document.getElementById('statusText').textContent = '❌ Gagal memuat outlet';
+                console.error(err);
             }
         }
 
+        // Buka pilih outlet
         document.getElementById('startBtn').addEventListener('click', () => {
             document.getElementById('selectModal').classList.add('active');
         });
 
-        document.getElementById('selectNext').addEventListener('click', () => {
-            const sel = document.getElementById('officeSelect');
-            if (!sel.value || sel.value.startsWith('⚠️')) {
-                alert('Pilih unit terlebih dahulu');
-                return;
-            }
-            selectedOfficeId = sel.value;
-            const name = sel.selectedOptions[0].text;
-            document.getElementById('modalOfficeName').textContent = 'unit: ' + name;
+        // Pilih lanjut
+        document.getElementById('selectLanjut').addEventListener('click', () => {
+            const select = document.getElementById('officeSelect');
+            if (!select.value) return alert('Pilih outlet dulu!');
+            
+            selectedOfficeId = select.value;
+            selectedOfficeName = select.selectedOptions[0].text;
+            
             document.getElementById('selectModal').classList.remove('active');
+            document.getElementById('modalOfficeName').textContent = selectedOfficeName;
             document.getElementById('pinModal').classList.add('active');
-            document.getElementById('pinInput').value = '';
-            updatePinDots('');
-            document.getElementById('pinVerify').disabled = true;
-            document.getElementById('pinInput').focus();
+            
+            // Reset PIN
+            document.querySelectorAll('.pin-box').forEach(b => { b.value = ''; });
+            document.querySelector('.pin-box').focus();
         });
 
+        // Batal pilih
         document.getElementById('selectBatal').addEventListener('click', () => {
             document.getElementById('selectModal').classList.remove('active');
         });
 
-        const pinInput = document.getElementById('pinInput');
-        const pinDots = document.querySelectorAll('.pin-dot');
-        
-        pinInput.addEventListener('input', (e) => {
-            const val = e.target.value.replace(/\D/g, '');
-            e.target.value = val;
-            updatePinDots(val);
-            document.getElementById('pinVerify').disabled = val.length !== 6;
+        // PIN input handling
+        const pinBoxes = document.querySelectorAll('.pin-box');
+        pinBoxes.forEach((box, idx) => {
+            box.addEventListener('input', (e) => {
+                if (e.target.value) {
+                    if (idx < 5) pinBoxes[idx + 1].focus();
+                }
+                checkPinComplete();
+            });
+            box.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+                    pinBoxes[idx - 1].focus();
+                }
+            });
         });
 
-        function updatePinDots(val) {
-            pinDots.forEach((dot, i) => {
-                dot.classList.toggle('filled', i < val.length);
-            });
+        function checkPinComplete() {
+            const pin = getPinValue();
+            document.getElementById('modalVerifikasi').disabled = pin.length !== 6;
+            document.getElementById('modalVerifikasi').classList.toggle('active', pin.length === 6);
         }
 
-        document.getElementById('pinBatal').addEventListener('click', () => {
+        function getPinValue() {
+            return Array.from(pinBoxes).map(b => b.value).join('');
+        }
+
+        // Batal PIN
+        document.getElementById('modalBatal').addEventListener('click', () => {
             document.getElementById('pinModal').classList.remove('active');
         });
 
-        document.getElementById('pinVerify').addEventListener('click', async () => {
-            const pin = pinInput.value;
-            const btn = document.getElementById('pinVerify');
-            btn.textContent = '[ MEMVERIFIKASI ]';
+        // Verifikasi PIN
+        document.getElementById('modalVerifikasi').addEventListener('click', async () => {
+            const pin = getPinValue();
+            const btn = document.getElementById('modalVerifikasi');
+            btn.textContent = 'Memverifikasi...';
             btn.disabled = true;
-
+            
             try {
+                // Ambil QR langsung dalam satu permintaan
                 const url = `${API_BASE}?ajaxverifyoffice=${encodeURIComponent(selectedOfficeId)}&pin=${encodeURIComponent(pin)}`;
                 const res = await fetch(url, { cache: 'no-store' });
                 const html = await res.text();
-
+                
                 if (html.trim() === '0') {
-                    alert('⚠️ Kode otorisasi tidak valid!');
-                    pinInput.value = '';
-                    updatePinDots('');
-                    pinInput.focus();
+                    alert('❌ PIN salah!');
+                    pinBoxes.forEach(b => b.value = '');
+                    pinBoxes[0].focus();
                     return;
                 }
-
+                
+                // Berhasil — buka halaman QR
                 document.getElementById('pinModal').classList.remove('active');
-                document.getElementById('qrOfficeName').textContent = 'unit: ' + document.getElementById('modalOfficeName').textContent.replace('unit: ', '');
-                document.getElementById('qrModal').classList.add('active');
-                showQR(html);
-
-                qrTimer = setInterval(() => refreshQR(pin), 3000);
-
+                document.getElementById('qrOfficeName').textContent = selectedOfficeName;
+                document.getElementById('qrPage').classList.add('active');
+                
+                // Tampil QR pertama kali
+                displayQR(html);
+                
+                // Auto refresh tiap 3 detik
+                qrRefreshTimer = setInterval(() => refreshQR(pin), 3000);
+                
             } catch (err) {
-                alert('Kesalahan: ' + err.message);
+                alert('Error: ' + err.message);
             } finally {
-                btn.textContent = '[ KIRIM ]';
+                btn.textContent = 'Verifikasi';
                 btn.disabled = false;
             }
         });
 
-        function showQR(html) {
-            const imgMatch = html.match(/<img[^>]+src=["']?([^"'>]+)["']?/i);
+        function displayQR(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const img = doc.querySelector('img');
             
-            if (imgMatch && imgMatch[1]) {
-                let src = imgMatch[1];
-                if (src.startsWith('/')) src = 'https://hr.yeusaigongroup.com' + src;
-                src += (src.includes('?') ? '&' : '?') + 't=' + Date.now();
+            if (img && img.src) {
+                let src = img.src;
+                if (src.startsWith('/')) {
+                    src = 'https://hr.yeusaigongroup.com' + src;
+                }
+                src = src + (src.includes('?') ? '&' : '?') + 't=' + Date.now();
                 
                 document.getElementById('qrPlaceholder').style.display = 'none';
                 document.getElementById('qrImage').style.display = 'block';
                 document.getElementById('qrImage').src = src;
-                document.getElementById('qrStatus').textContent = '● AKTIF · refresh tiap 3 detik';
+                document.getElementById('qrStatus').textContent = '✅ Aktif — diperbarui tiap 3 detik';
             } else {
                 document.getElementById('qrPlaceholder').style.display = 'block';
-                document.getElementById('qrPlaceholder').textContent = '⚠️ Token tidak tersedia';
+                document.getElementById('qrPlaceholder').textContent = '⚠️ QR tidak tersedia';
                 document.getElementById('qrImage').style.display = 'none';
-                document.getElementById('qrStatus').textContent = '⚠️ Coba ulang';
+                document.getElementById('qrStatus').textContent = '⚠️ Coba periksa ulang PIN';
             }
         }
 
         async function refreshQR(pin) {
             try {
-                const url = `${API_BASE}?ajaxverifyoffice=${encodeURIComponent(selectedOfficeId)}&pin=${encodeURIComponent(pin)}&t=${Date.now()}`;
-                const res = await fetch(url, { cache: 'no-store' });
+                const url = `${API_BASE}?ajaxverifyoffice=${encodeURIComponent(selectedOfficeId)}&pin=${encodeURIComponent(pin)}`;
+                const res = await fetch(url + '&t=' + Date.now(), { cache: 'no-store' });
                 const html = await res.text();
-                showQR(html);
-            } catch {
-                document.getElementById('qrStatus').textContent = '● MENYAMBUNGKAN...';
+                displayQR(html);
+            } catch (err) {
+                document.getElementById('qrStatus').textContent = '🔄 Menyambungkan ulang...';
             }
         }
 
-        document.getElementById('qrClose').addEventListener('click', () => {
-            if (qrTimer) clearInterval(qrTimer);
-            document.getElementById('qrModal').classList.remove('active');
+        // Tutup QR
+        document.getElementById('qrTutup').addEventListener('click', () => {
+            if (qrRefreshTimer) clearInterval(qrRefreshTimer);
+            document.getElementById('qrPage').classList.remove('active');
             document.getElementById('qrImage').src = '';
         });
     </script>
