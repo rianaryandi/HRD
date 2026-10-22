@@ -12,7 +12,7 @@
             --terminal-gray: #222222;
             --terminal-text: #cccccc;
             --terminal-border: #333333;
-            --terminal-red: #ff44444;
+            --terminal-red: #ff4444;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', Courier, monospace; }
@@ -27,7 +27,6 @@
             position: relative;
         }
 
-        /* Scanline effect */
         body::before {
             content: '';
             position: fixed;
@@ -47,29 +46,12 @@
             text-align: left;
             position: relative;
             z-index: 1;
-            border: 1px solid var(--terminal-border);
-            padding: 30px;
         }
 
         .header-line {
             color: #555;
             font-size: 12px;
             margin-bottom: 5px;
-        }
-
-        .prompt { color: var(--terminal-green); }
-        .cursor {
-            display: inline-block;
-            width: 8px;
-            height: 16px;
-            background: var(--terminal-green);
-            animation: blink 1s step-end infinite;
-            vertical-align: middle;
-            margin-left: 2px;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
         }
 
         .top-badge {
@@ -157,7 +139,6 @@
             padding-left: 26px;
         }
 
-        /* Modal Base */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -214,7 +195,6 @@
         .btn-ok.active:hover { background: var(--terminal-green); color: #000; }
         .btn-ok:disabled { border-color: #333; color: #444; cursor: not-allowed; }
 
-        /* QR Modal */
         .qr-modal {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -294,7 +274,6 @@
         }
         .btn-tutup:hover { border-color: var(--terminal-red); color: var(--terminal-red); }
 
-        /* Select Modal */
         .select-modal {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -325,16 +304,6 @@
         select:focus { outline: none; border-color: var(--terminal-green); }
         select option { background: #111; color: #ccc; }
 
-        /* Typewriter effect */
-        .fade-in {
-            animation: fadeIn 0.5s ease forwards;
-            opacity: 0;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
         .hidden { display: none !important; }
     </style>
 </head>
@@ -342,7 +311,7 @@
     <div class="container">
         <div class="header-line">root@anonymous:~# ./system --init</div>
         <div class="top-badge">SYSTEM ONLINE</div>
-        <h1>ATTENDANCE <span class="prompt">TERMINAL</span></h1>
+        <h1>ATTENDANCE <span>TERMINAL</span></h1>
         <p class="subtitle">// akses sistem otorisasi · verifikasi identitas · generate token</p>
         
         <button class="main-btn" id="startBtn">[ INISIALISASI ]</button>
@@ -437,66 +406,56 @@
         }
 
         async function loadOffices() {
+            const select = document.getElementById('officeSelect');
             try {
-                console.log('> Memuat daftar unit...');
+                console.log('> Memuat daftar outlet...');
                 const url = `${API_BASE}?ajaxoffices=1`;
+                console.log('URL:', url);
+                
                 const res = await fetch(url, { cache: 'no-store' });
+                console.log('Status:', res.status);
+                
                 const text = await res.text();
+                console.log('Respons diterima, panjang:', text.length, 'karakter');
 
-                const select = document.getElementById('officeSelect');
-                select.innerHTML = '';
+                select.innerHTML = '<option value="">-- pilih unit --</option>';
 
                 if (!text || text.trim() === '') {
-                    select.innerHTML = '<option value="">⚠️ Data kosong</option>';
-                    document.getElementById('statusText').textContent = 'TIDAK ADA DATA';
+                    select.innerHTML = '<option value="">⚠️ Data kosong — coba ulang</option>';
+                    document.getElementById('statusText').textContent = 'DATA KOSONG';
                     document.getElementById('statusText').classList.add('error');
                     return;
                 }
 
-                if (text.trim().startsWith('<')) {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(text, 'text/html');
-                    let options = doc.querySelectorAll('option');
+                const regex = /<option\s+[^>]*value=["']?([^"'>]+)["']?[^>]*>([\s\S]*?)<\/option>/gi;
+                let match;
+                let ditemukan = 0;
+                
+                while ((match = regex.exec(text)) !== null) {
+                    const val = match[1].trim();
+                    let txt = match[2].trim();
+                    txt = txt.replace(/<[^>]*>/g, '');
                     
-                    if (options.length === 0) {
-                        const matches = text.match(/<option[^>]*>[\s\S]*?<\/option>/gi);
-                        if (matches) {
-                            options = matches.map(m => {
-                                const tempDoc = new DOMParser().parseFromString(m, 'text/html');
-                                return tempDoc.querySelector('option');
-                            }).filter(o => o);
-                        }
+                    if (val && val !== '0' && txt) {
+                        select.innerHTML += `<option value="${val}">${txt}</option>`;
+                        ditemukan++;
                     }
+                }
 
-                    if (options.length > 0) {
-                        select.innerHTML = '<option value="">-- pilih unit --</option>';
-                        let ditemukan = 0;
-                        options.forEach(opt => {
-                            const val = opt.value?.trim();
-                            const txt = opt.textContent?.trim();
-                            if (val && val !== '0' && txt) {
-                                select.innerHTML += `<option value="${val}">${txt}</option>`;
-                                ditemukan++;
-                            }
-                        });
-                        document.getElementById('statusText').textContent = `TERHUBUNG (${ditemukan})`;
-                        console.log(`> Ditemukan ${ditemukan} unit`);
-                    } else {
-                        select.innerHTML = '<option value="">⚠️ Data tidak terbaca</option>';
-                        document.getElementById('statusText').textContent = 'FORMAT ERROR';
-                        document.getElementById('statusText').classList.add('error');
-                    }
+                if (ditemukan > 0) {
+                    document.getElementById('statusText').textContent = `TERHUBUNG (${ditemukan} unit)`;
+                    console.log(`✅ Berhasil memuat ${ditemukan} unit`);
                 } else {
-                    select.innerHTML = '<option value="">⚠️ Respons tidak valid</option>';
-                    document.getElementById('statusText').textContent = 'RESPONSE ERROR';
+                    select.innerHTML = '<option value="">⚠️ Tidak ada data outlet</option>';
+                    document.getElementById('statusText').textContent = 'TIDAK ADA DATA';
                     document.getElementById('statusText').classList.add('error');
                 }
+
             } catch (err) {
                 console.error('> Error:', err);
                 document.getElementById('statusText').textContent = 'KONEKSI GAGAL';
                 document.getElementById('statusText').classList.add('error');
-                const select = document.getElementById('officeSelect');
-                select.innerHTML = `<option value="">⚠️ ${err.message}</option>`;
+                select.innerHTML = `<option value="">⚠️ Error: ${err.message}</option>`;
             }
         }
 
@@ -506,7 +465,10 @@
 
         document.getElementById('selectNext').addEventListener('click', () => {
             const sel = document.getElementById('officeSelect');
-            if (!sel.value || sel.value.startsWith('⚠️')) return alert('Pilih unit terlebih dahulu');
+            if (!sel.value || sel.value.startsWith('⚠️')) {
+                alert('Pilih unit terlebih dahulu');
+                return;
+            }
             selectedOfficeId = sel.value;
             const name = sel.selectedOptions[0].text;
             document.getElementById('modalOfficeName').textContent = 'unit: ' + name;
@@ -577,12 +539,10 @@
         });
 
         function showQR(html) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const img = doc.querySelector('img');
-
-            if (img && img.src) {
-                let src = img.src;
+            const imgMatch = html.match(/<img[^>]+src=["']?([^"'>]+)["']?/i);
+            
+            if (imgMatch && imgMatch[1]) {
+                let src = imgMatch[1];
                 if (src.startsWith('/')) src = 'https://hr.yeusaigongroup.com' + src;
                 src += (src.includes('?') ? '&' : '?') + 't=' + Date.now();
                 
