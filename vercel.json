@@ -1,14 +1,8 @@
 {
+  "version": 2,
   "functions": {
     "api/proxy.js": {
-      "runtime": "edge",
-      "maxDuration": 60
+      "runtime": "edge"
     }
-  },
-  "routes": [
-    {
-      "src": "/api/proxy",
-      "dest": "/api/proxy.js"
-    }
-  ]
+  }
 }
