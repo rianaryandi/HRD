@@ -1,38 +1,26 @@
-export const runtime = 'edge';
-
-const TARGET_URL = 'https://hr.yeusaigongroup.com';
-
-export default async function handler(request) {
-  const url = new URL(request.url);
+export default async function handler(req) {
+  const url = new URL(req.url, 'http://localhost');
   const path = url.searchParams.get('path') || '';
-  const targetFullUrl = `${TARGET_URL}/${path}`;
+  const targetFullUrl = 'https://hr.yeusaigongroup.com/' + path;
 
   try {
-    const response = await fetch(targetFullUrl, {
-      method: request.method,
+    const res = await fetch(targetFullUrl, {
+      method: req.method,
       headers: {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Referer': `${TARGET_URL}/`,
-        'Origin': TARGET_URL,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Referer': 'https://hr.yeusaigongroup.com/'
       }
     });
 
-    const text = await response.text();
-    
-    return new Response(text, {
-      status: response.status,
+    const body = await res.text();
+    return new Response(body, {
+      status: res.status,
       headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
+        'Content-Type': res.headers.get('Content-Type') || 'text/html',
+        'Access-Control-Allow-Origin': '*'
       }
     });
-  } catch (error) {
-    return new Response(`Error: ${error.message}`, {
-      status: 500,
-      headers: { 'Content-Type': 'text/plain' }
-    });
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
 }
