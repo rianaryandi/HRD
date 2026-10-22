@@ -120,7 +120,7 @@
 
 <script>
 /* ============ KONFIGURASI ============ */
-const API_BASE = '/api/proxy?path='; // Vercel Edge function (same-origin)
+const API_BASE = '/api/proxy.mjs?path='; // Vercel Edge function (same-origin)
 function apiUrl(p){ return API_BASE + encodeURIComponent(p); }
 
 /* ============ WARM-UP: ping tiap 4 menit biar function tetap nyala ============ */
