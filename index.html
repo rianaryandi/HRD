@@ -150,8 +150,14 @@ function apiUrl(p){ return API_BASE + encodeURIComponent(p); }
 let officesCache = [];
 (function init(){
   const pill = document.getElementById('connStatus');
-  loadOffices('').then(list => { officesCache = list; pill.textContent = 'terhubung · ' + list.length + ' office'; })
-    .catch(()=>{ pill.textContent='gagal terhubung'; pill.classList.add('err'); });
+  function coba(){
+    loadOffices('').then(list => { officesCache = list; pill.textContent = 'terhubung · ' + list.length + ' office'; pill.classList.remove('err'); })
+      .catch(()=>{
+        if(pill.dataset.retried){ pill.textContent='gagal terhubung'; pill.classList.add('err'); }
+        else { pill.dataset.retried='1'; pill.textContent='menghubungkan ulang…'; setTimeout(coba, 3000); }
+      });
+  }
+  coba();
   updateLiveClock(); setInterval(updateLiveClock, 1000);
 })();
 
@@ -277,14 +283,25 @@ function stopQrAutoRefresh(){
   qrRefreshInterval = qrCountdownInterval = null;
 }
 
-function refreshQrCode(){
-  // PENTING: TANPA crossorigin → cookie session TERKIRIM (ini kunci QR muncul)
+async function refreshQrCode(){
+  // PALING ANDAL: fetch dengan credentials (jamin cookie terkirim) → blob → tampilkan
   const src = apiUrl('/?ajaxofficeqr=' + Date.now() + '_' + Math.random().toString(36).substr(2,6));
-  qrImage.style.opacity = '0.5';
-  const pre = new Image();
-  pre.onload = ()=>{ qrImage.src = src; qrImage.style.opacity='1'; document.getElementById('qrError').textContent=''; };
-  pre.onerror = ()=>{ qrImage.style.opacity='1'; document.getElementById('qrError').textContent='Mengulang…'; };
-  pre.src = src;
+  qrImage.style.opacity = '0.4';
+  try {
+    const r = await fetch(src, {credentials:'include', cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const blob = await r.blob();
+    if(!blob || blob.size < 200) throw new Error('gambar kosong');
+    const objUrl = URL.createObjectURL(blob);
+    const oldSrc = qrImage.src;
+    qrImage.src = objUrl;
+    qrImage.style.opacity = '1';
+    document.getElementById('qrError').textContent = '';
+    if(oldSrc && oldSrc.startsWith('blob:')) URL.revokeObjectURL(oldSrc);
+  } catch(e){
+    qrImage.style.opacity = '1';
+    document.getElementById('qrError').textContent = 'Mengulang… (' + e.message + ')';
+  }
 }
 
 // Tutup modal saat klik area gelap
