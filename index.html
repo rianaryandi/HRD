@@ -154,7 +154,7 @@
 const PROXY = 'proxy.php?path=';
 const TARGET_BASE = 'https://hr.yeusaigongroup.com';
 // Jika TIDAK pakai proxy (same-origin), set API_BASE = '' dan panggil langsung
-const API_BASE = '/api/proxy?path='; // Vercel serverless (same-origin), 'proxy.php?path=' = lewat proxy
+const API_BASE = '/api/proxy.js?path='; // Vercel serverless (same-origin), 'proxy.php?path=' = lewat proxy
 
 function apiUrl(pathAndQuery){
   // pathAndQuery contoh: '/?ajaxoffices=1'
