@@ -16,7 +16,7 @@
   body{font-family:'Figtree',system-ui,sans-serif;background:var(--bg);color:var(--text);margin:0;line-height:1.6}
   .btn-primary{background:var(--accent);color:#fff;font-weight:700;border-radius:14px;padding:14px 28px;font-size:16px;border:none;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 14px rgba(13,150,105,.35)}
   .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(13,150,105,.45)}
-  .btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
   .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:8px 16px;cursor:pointer;font-weight:600}
   .btn-ghost:hover{color:var(--text);border-color:var(--accent)}
   .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
@@ -25,20 +25,24 @@
   .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
   .modal-box{background:var(--card);border-radius:20px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:pop .25s ease}
   @keyframes pop{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
-  .qr-img{width:260px;height:260px;max-width:80vw;max-height:80vw;border-radius:16px;border:6px solid #fff;box-shadow:0 4px 20px rgba(0,0,0,.12);transition:opacity .3s;background:#f1f5f9}
+  .qr-img{width:260px;height:260px;max-width:80vw;max-height:80vw;border-radius:16px;border:6px solid #fff;box-shadow:0 4px 20px rgba(0,0,0,.12);transition:opacity .3s;object-fit:contain;background:#fff}
   .live-clock{font-variant-numeric:tabular-nums}
   .countdown-badge{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;font-weight:800;font-size:20px;background:var(--accent-soft);color:var(--accent)}
   .countdown-badge.warn{background:rgba(220,53,69,.12);color:#dc3545}
-  .spinner{width:18px;height:18px;border:3px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px}
+  .spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle}
+  .spinner.dark{border-color:var(--accent-soft);border-top-color:var(--accent)}
   @keyframes spin{to{transform:rotate(360deg)}}
   .status-pill{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent)}
   .status-pill.err{background:rgba(220,53,69,.1);color:#dc3545;border-color:#dc3545}
   input[type=text],input[type=password]{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:12px;font-size:15px;outline:none;transition:border-color .15s;font-family:inherit}
   input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  #pinInput{letter-spacing:.35em}
+  #pinInput::placeholder{letter-spacing:normal;font-size:15px;font-weight:500;color:#94a3b8}
   .hidden{display:none!important}
 </style>
 </head>
 <body>
+
 <!-- ===== HEADER / HERO ===== -->
 <div style="background:radial-gradient(800px 400px at 20% -10%, var(--accent-soft), transparent 70%), var(--bg);border-bottom:1px solid var(--border)">
   <div style="max-width:720px;margin:0 auto;padding:48px 20px 40px;text-align:center">
@@ -48,12 +52,16 @@
     </div>
     <h1 style="font-size:clamp(28px,5vw,42px);font-weight:800;margin:0 0 10px;line-height:1.15">Absensi HRD <span style="background:linear-gradient(100deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent">Gedo</span></h1>
     <p style="color:var(--muted);margin:0 auto 28px;max-width:460px;font-size:15px">Pindai QR Code untuk absensi karyawan. Pilih lokasi office, masukkan PIN, dan tampilkan QR yang diperbarui otomatis setiap 3 detik.</p>
-    <button id="btnStart" class="btn-primary">Mulai QR Attendance</button>
+    <button id="btnStart" class="btn-primary">
+      <span id="btnStartLabel">Mulai QR Attendance</span>
+    </button>
     <div style="margin-top:16px;font-size:12px;color:var(--muted)">
-      Status: <span id="connStatus" class="status-pill" style="margin-left:8px">menghubungkan…</span>
+      Server: <code id="serverLabel" style="background:rgba(0,0,0,.05);padding:2px 8px;border-radius:6px;font-size:11px">memuat…</code>
+      <span id="connStatus" class="status-pill" style="margin-left:8px">cek koneksi…</span>
     </div>
   </div>
 </div>
+
 <!-- ===== INFO CARDS ===== -->
 <div style="max-width:720px;margin:28px auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:14px">
   <div class="card" style="flex:1;min-width:200px;padding:18px">
@@ -84,6 +92,7 @@
     <p style="font-size:13px;color:var(--muted);margin:0">QR diperbarui otomatis setiap 3 detik agar aman.</p>
   </div>
 </div>
+
 <div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">
   Absensi HRD Gedo · terhubung ke PeopleBond HCMS
 </div>
@@ -97,7 +106,7 @@
     </div>
     <input type="text" id="officeSearch" placeholder="Cari nama office…" autocomplete="off">
     <div id="officeGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:16px">
-      <div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted)"><span class="spinner" style="border-color:var(--accent-soft);border-top-color:var(--accent)"></span> Memuat daftar office…</div>
+      <div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted)"><span class="spinner dark"></span> Memuat daftar office…</div>
     </div>
   </div>
 </div>
@@ -110,8 +119,7 @@
     </div>
     <h2 style="margin:0 0 6px;font-size:20px;font-weight:800">PIN Office</h2>
     <p id="pinOfficeName" style="color:var(--muted);font-size:14px;margin:0 0 18px"></p>
-    <!-- FIX 1: placeholder DIHAPUS (kosong) -->
-    <input type="password" id="pinInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" style="text-align:center;font-size:22px;letter-spacing:.4em;font-weight:700">
+    <input type="password" id="pinInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="" autocomplete="off" style="text-align:center;font-size:22px;font-weight:700">
     <p id="pinError" style="color:#dc3545;font-size:13px;margin:10px 0 0;min-height:18px"></p>
     <div style="display:flex;gap:10px;margin-top:18px">
       <button class="btn-ghost" style="flex:1;padding:12px" onclick="closePinModal()">Batal</button>
@@ -131,7 +139,6 @@
     <div class="live-clock" style="color:var(--muted);font-size:14px;margin-bottom:16px">
       <span id="liveDate"></span> · <strong id="liveTime" style="color:var(--text);font-size:16px"></strong>
     </div>
-    <!-- FIX 3: crossorigin DIHAPUS agar cookie session terkirim (kunci QR muncul) -->
     <div style="position:relative;display:inline-block;margin-bottom:14px">
       <img id="qrImage" class="qr-img" alt="QR Attendance">
       <div style="position:absolute;top:-10px;right:-10px" class="countdown-badge" id="qrCountdown">3</div>
@@ -142,171 +149,348 @@
 </div>
 
 <script>
-/* ============ KONFIGURASI ============ */
-const API_BASE = '/api/proxy?path=';
-function apiUrl(p){ return API_BASE + encodeURIComponent(p); }
+/* ============================================================
+   KONFIGURASI
+   ============================================================ */
+// Sesuaikan dengan deployment Vercel (proxy.js)
+const API_BASE = '/api/proxy.js?path=';
 
-/* ============ CEK KONEKSI + PRE-FETCH ============ */
-let officesCache = [];
-(function init(){
-  const pill = document.getElementById('connStatus');
-  function coba(){
-    loadOffices('').then(list => { officesCache = list; pill.textContent = 'terhubung · ' + list.length + ' office'; pill.classList.remove('err'); })
-      .catch(()=>{
-        if(pill.dataset.retried){ pill.textContent='gagal terhubung'; pill.classList.add('err'); }
-        else { pill.dataset.retried='1'; pill.textContent='menghubungkan ulang…'; setTimeout(coba, 3000); }
-      });
-  }
-  coba();
-  updateLiveClock(); setInterval(updateLiveClock, 1000);
+function apiUrl(pathAndQuery){
+  if(API_BASE === '') return pathAndQuery;
+  return API_BASE + encodeURIComponent(pathAndQuery);
+}
+
+document.getElementById('serverLabel').textContent =
+  API_BASE === '' ? 'direct (same-origin)' :
+  API_BASE.includes('proxy.js') ? 'via /api/proxy.js' : 'via proxy';
+
+/* ============================================================
+   CEK KONEKSI AWAL
+   ============================================================ */
+(function checkConn(){
+  const s = document.getElementById('connStatus');
+  fetch(apiUrl('/?ajaxoffices=1'), {credentials:'include'})
+    .then(r => { if(r.ok){ s.textContent='terhubung'; s.classList.remove('err'); } else { s.textContent='error '+r.status; s.classList.add('err'); } })
+    .catch(() => { s.textContent='gagal terhubung'; s.classList.add('err'); });
 })();
 
-/* ============ OFFICE LIST ============ */
+/* ============================================================
+   MODAL OFFICE
+   ============================================================ */
 const officeModal = document.getElementById('officeModal');
 const officeGrid = document.getElementById('officeGrid');
+let currentOffices = [];
 
-document.getElementById('btnStart').addEventListener('click', ()=>{
+function openOfficeModal(){
   officeModal.classList.remove('hidden');
-  if(officesCache.length) renderOffices(officesCache); else loadOffices('');
-});
-function closeOfficeModal(){ officeModal.classList.add('hidden'); stopQrAutoRefresh(); }
-
-async function loadOffices(query){
-  officeGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted)"><span class="spinner" style="border-color:var(--accent-soft);border-top-color:var(--accent)"></span> Memuat…</div>';
-  const url = query ? '/?ajaxoffices=1&officeQuery='+encodeURIComponent(query) : '/?ajaxoffices=1';
-  const r = await fetch(apiUrl(url), {credentials:'include'});
-  const html = await r.text();
-  const offices = [];
-  const re = /selectOffice\(\{\s*id\s*:\s*(\d+)\s*,\s*name\s*:\s*`([^`]+)`\s*\}\)/g;
-  let m;
-  while((m = re.exec(html)) !== null) offices.push({id:m[1], name:m[2]});
-  if(!query) officesCache = offices;
-  renderOffices(offices);
-  return offices;
+  loadOffices('');
 }
-function renderOffices(list){
-  if(!list.length){ officeGrid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted)">Tidak ada office ditemukan.</div>'; return; }
-  officeGrid.innerHTML = list.map(o=>'<button class="office-btn" data-id="'+o.id+'" data-name="'+o.name.replace(/"/g,'&quot;')+'">'+o.name+'</button>').join('');
-  officeGrid.querySelectorAll('.office-btn').forEach(b=>b.addEventListener('click',()=>onPickOffice(b.dataset.id,b.dataset.name)));
-}
-let searchT=null;
-document.getElementById('officeSearch').addEventListener('input',function(){
-  clearTimeout(searchT); const v=this.value;
-  searchT=setTimeout(()=>loadOffices(v),300);
-});
+function closeOfficeModal(){ officeModal.classList.add('hidden'); }
 
-/* ============ PILIH OFFICE → LANGSUNG minta PIN (semua office butuh PIN) ============ */
-let selected = null;
-function onPickOffice(id, name){
-  selected = {id, name};
-  closeOfficeModal();
-  document.getElementById('pinOfficeName').textContent = name;
-  document.getElementById('pinInput').value = '';
-  document.getElementById('pinError').textContent = '';
-  document.getElementById('pinModal').classList.remove('hidden');
-  setTimeout(()=>document.getElementById('pinInput').focus(), 100);
-}
-function closePinModal(){ document.getElementById('pinModal').classList.add('hidden'); }
-
-/* ============ SUBMIT PIN → 1 REQUEST langsung (tanpa validasi terpisah) ============ */
-const pinInput = document.getElementById('pinInput');
-pinInput.addEventListener('keydown', e=>{ if(e.key==='Enter') submitPin(); });
-document.getElementById('pinSubmit').addEventListener('click', submitPin);
-
-function submitPin(){
-  const pin = pinInput.value.trim();
-  const btn = document.getElementById('pinSubmit');
-  if(!pin || pin.length < 4){ document.getElementById('pinError').textContent='PIN tidak boleh kosong'; return; }
-  document.getElementById('pinError').textContent = '';
-  btn.disabled = true;
-  // FIX 2: teks "Verifikasi" TETAP ADA + spinner kecil di sampingnya
-  btn.innerHTML = '<span class="spinner"></span>Verifikasi';
-
-  // SATU request: verifikasi PIN + aktifkan session QR sekaligus
-  fetch(apiUrl('/?ajaxverifyoffice='+selected.id+'&pin='+encodeURIComponent(pin)), {credentials:'include'})
+function loadOffices(query){
+  officeGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted)"><span class="spinner dark"></span> Memuat…</div>';
+  const url = query ? '/?ajaxoffices=1&officeQuery=' + encodeURIComponent(query) : '/?ajaxoffices=1';
+  fetch(apiUrl(url), {credentials:'include'})
     .then(r => r.text())
-    .then(data => {
-      if(data.trim() === '0'){
-        document.getElementById('pinError').textContent = 'PIN Office Anda tidak sesuai';
-        btn.disabled = false; btn.textContent = 'Verifikasi';
-        return;
+    .then(html => {
+      const offices = [];
+      const re = /selectOffice\(\{\s*id\s*:\s*(\d+)\s*,\s*name\s*:\s*`([^`]+)`\s*\}\)/g;
+      let m;
+      while((m = re.exec(html)) !== null){
+        offices.push({id: m[1], name: m[2]});
       }
-      // SUKSES → tampilkan QR
-      closePinModal();
-      showQrModal(selected.name);
+      currentOffices = offices;
+      renderOffices(offices);
     })
-    .catch(e => {
-      document.getElementById('pinError').textContent = 'Gagal terhubung: ' + e.message;
-    })
-    .finally(() => {
-      btn.disabled = false; btn.textContent = 'Verifikasi';
+    .catch(() => {
+      officeGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:#dc3545">Gagal memuat daftar office. Periksa koneksi / proxy.</div>';
     });
 }
 
-/* ============ TAMPILKAN QR + AUTO REFRESH ============ */
-let qrRefreshInterval=null, qrCountdownInterval=null, qrCountdown=3;
-const qrImage = document.getElementById('qrImage');
+function renderOffices(list){
+  if(!list.length){ officeGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted)">Tidak ada office ditemukan.</div>'; return; }
+  officeGrid.innerHTML = list.map(o =>
+    '<button class="office-btn" data-id="'+o.id+'" data-name="'+o.name.replace(/"/g,'&quot;')+'">'+o.name+'</button>'
+  ).join('');
+  officeGrid.querySelectorAll('.office-btn').forEach(btn => {
+    btn.addEventListener('click', () => selectOffice(btn.dataset.id, btn.dataset.name));
+  });
+}
 
-function showQrModal(name){
-  document.getElementById('qrOfficeName').textContent = name;
+let searchTimer = null;
+document.getElementById('officeSearch').addEventListener('input', function(){
+  clearTimeout(searchTimer);
+  const val = this.value;
+  searchTimer = setTimeout(() => loadOffices(val), 400);
+});
+
+/* ============================================================
+   PILIH OFFICE → cek PIN → tampilkan QR
+   ============================================================ */
+let selectedOffice = null;
+let lastPin = null; // simpan PIN agar bisa refresh QR via re-verify
+
+function selectOffice(id, name){
+  selectedOffice = {id, name};
+  lastPin = null;
+  closeOfficeModal();
+  fetch(apiUrl('/?ajaxverifyoffice=' + id), {credentials:'include'})
+    .then(r => r.text())
+    .then(data => {
+      if(data.trim() === '0'){
+        openPinModal(name);
+      } else {
+        showQrModal(name, data);
+      }
+    })
+    .catch(e => alert('Gagal terhubung ke server: ' + e.message));
+}
+
+/* ============================================================
+   MODAL PIN
+   ============================================================ */
+const pinModal = document.getElementById('pinModal');
+const pinInput = document.getElementById('pinInput');
+const pinError = document.getElementById('pinError');
+
+function openPinModal(name){
+  document.getElementById('pinOfficeName').textContent = name;
+  pinInput.value = ''; pinError.textContent = '';
+  pinModal.classList.remove('hidden');
+  setTimeout(() => pinInput.focus(), 100);
+}
+function closePinModal(){ pinModal.classList.add('hidden'); }
+
+pinInput.addEventListener('keydown', e => { if(e.key === 'Enter') submitPin(); });
+document.getElementById('pinSubmit').addEventListener('click', submitPin);
+
+function setPinBtnLoading(loading){
+  const btn = document.getElementById('pinSubmit');
+  if(loading){
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Verifikasi';
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Verifikasi';
+  }
+}
+
+function submitPin(){
+  const pin = pinInput.value.trim();
+  if(!pin || pin.length < 4){ pinError.textContent = 'PIN tidak boleh kosong'; return; }
+  pinError.textContent = '';
+  setPinBtnLoading(true);
+
+  fetch(apiUrl('/?onlyvalidate=1&ajaxverifyoffice=' + selectedOffice.id + '&pin=' + encodeURIComponent(pin)), {credentials:'include'})
+    .then(r => r.text())
+    .then(data => {
+      if(data.trim() === '0'){
+        pinError.textContent = 'PIN Office Anda tidak sesuai';
+        setPinBtnLoading(false);
+        return null;
+      }
+      lastPin = pin;
+      return fetch(apiUrl('/?ajaxverifyoffice=' + selectedOffice.id + '&pin=' + encodeURIComponent(pin)), {credentials:'include'})
+        .then(r => r.text());
+    })
+    .then(qrHtml => {
+      if(qrHtml == null) return;
+      closePinModal();
+      showQrModal(selectedOffice.name, qrHtml);
+    })
+    .catch(e => { pinError.textContent = 'Gagal terhubung: ' + e.message; })
+    .finally(() => { setPinBtnLoading(false); });
+}
+
+/* ============================================================
+   MODAL QR — tampilkan + auto refresh 3 detik + live clock
+   ============================================================ */
+const qrModal = document.getElementById('qrModal');
+const qrImage = document.getElementById('qrImage');
+const qrCountdownEl = document.getElementById('qrCountdown');
+let qrRefreshInterval = null, qrCountdownInterval = null, qrClockInterval = null;
+let qrCountdown = 3;
+let currentQrToken = null;
+let currentBlobUrl = null;
+let refreshInFlight = false;
+
+function revokeBlob(){
+  if(currentBlobUrl){
+    URL.revokeObjectURL(currentBlobUrl);
+    currentBlobUrl = null;
+  }
+}
+
+function showQrModal(officeName, qrHtml){
+  document.getElementById('qrOfficeName').textContent = officeName;
   document.getElementById('qrError').textContent = '';
-  document.getElementById('qrModal').classList.remove('hidden');
-  refreshQrCode();
+  qrModal.classList.remove('hidden');
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(qrHtml, 'text/html');
+  const img = doc.querySelector('.officeqr');
+  if(img){
+    let src = img.getAttribute('src') || '';
+    // Ambil token dari /?ajaxofficeqr=TOKEN
+    const m = src.match(/ajaxofficeqr=([^&"']+)/);
+    currentQrToken = m ? m[1] : null;
+    loadQrImage(src);
+  } else {
+    currentQrToken = null;
+    refreshQrCode();
+  }
+
   startQrAutoRefresh();
 }
+
+function toProxyImageUrl(src){
+  if(!src) return apiUrl('/?ajaxofficeqr=' + Date.now());
+  if(src.startsWith('http')){
+    try{ const u = new URL(src); src = u.pathname + u.search; }catch(e){}
+  }
+  if(src.startsWith('/')) return apiUrl(src);
+  return apiUrl('/' + src);
+}
+
+/** Load QR via fetch (credentials) → blob URL, agar cookie session ikut */
+function loadQrImage(srcPath){
+  const url = toProxyImageUrl(srcPath);
+  qrImage.style.opacity = '0.4';
+  return fetch(url, {credentials:'include', cache:'no-store'})
+    .then(r => {
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      const ct = (r.headers.get('content-type') || '').toLowerCase();
+      // Kalau proxy mengembalikan HTML (login page), anggap gagal
+      if(ct.includes('text/html')) throw new Error('bukan gambar');
+      return r.blob();
+    })
+    .then(blob => {
+      // Pastikan benar-benar image
+      if(!blob.type.startsWith('image/') && blob.size < 100){
+        throw new Error('respon bukan gambar');
+      }
+      // Beberapa proxy mengembalikan image tanpa content-type image/*
+      // Cek magic bytes PNG/JPEG via partial check size
+      revokeBlob();
+      currentBlobUrl = URL.createObjectURL(blob);
+      qrImage.src = currentBlobUrl;
+      qrImage.style.opacity = '1';
+      document.getElementById('qrError').textContent = '';
+    })
+    .catch(() => {
+      qrImage.style.opacity = '1';
+      document.getElementById('qrError').textContent = 'Gagal memuat QR — mencoba ulang…';
+    });
+}
+
 function closeQrModal(){
-  document.getElementById('qrModal').classList.add('hidden');
+  qrModal.classList.add('hidden');
   stopQrAutoRefresh();
+  revokeBlob();
+  currentQrToken = null;
 }
 
 function updateLiveClock(){
-  const n = new Date();
-  document.getElementById('liveDate').textContent = n.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('liveTime').textContent = String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
+  const now = new Date();
+  const dateEl = document.getElementById('liveDate');
+  const timeEl = document.getElementById('liveTime');
+  if(dateEl) dateEl.textContent = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  if(timeEl){
+    timeEl.textContent = String(now.getHours()).padStart(2,'0') + ':' +
+                        String(now.getMinutes()).padStart(2,'0') + ':' +
+                        String(now.getSeconds()).padStart(2,'0');
+  }
 }
 
 function startQrAutoRefresh(){
   qrCountdown = 3;
   stopQrAutoRefresh();
-  qrCountdownInterval = setInterval(()=>{
+  updateLiveClock();
+  qrClockInterval = setInterval(updateLiveClock, 1000);
+  qrCountdownInterval = setInterval(() => {
     qrCountdown--;
-    const el = document.getElementById('qrCountdown');
-    el.textContent = qrCountdown;
-    el.classList.toggle('warn', qrCountdown<=1);
-    if(qrCountdown<=0) qrCountdown=3;
-  },1000);
+    qrCountdownEl.textContent = qrCountdown;
+    qrCountdownEl.classList.toggle('warn', qrCountdown <= 1);
+    if(qrCountdown <= 0) qrCountdown = 3;
+  }, 1000);
   qrRefreshInterval = setInterval(refreshQrCode, 3000);
 }
+
 function stopQrAutoRefresh(){
   if(qrRefreshInterval) clearInterval(qrRefreshInterval);
   if(qrCountdownInterval) clearInterval(qrCountdownInterval);
-  qrRefreshInterval = qrCountdownInterval = null;
+  if(qrClockInterval) clearInterval(qrClockInterval);
+  qrRefreshInterval = qrCountdownInterval = qrClockInterval = null;
 }
 
-async function refreshQrCode(){
-  // PALING ANDAL: fetch dengan credentials (jamin cookie terkirim) → blob → tampilkan
-  const src = apiUrl('/?ajaxofficeqr=' + Date.now() + '_' + Math.random().toString(36).substr(2,6));
-  qrImage.style.opacity = '0.4';
-  try {
-    const r = await fetch(src, {credentials:'include', cache:'no-store'});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const blob = await r.blob();
-    if(!blob || blob.size < 200) throw new Error('gambar kosong');
-    const objUrl = URL.createObjectURL(blob);
-    const oldSrc = qrImage.src;
-    qrImage.src = objUrl;
-    qrImage.style.opacity = '1';
-    document.getElementById('qrError').textContent = '';
-    if(oldSrc && oldSrc.startsWith('blob:')) URL.revokeObjectURL(oldSrc);
-  } catch(e){
-    qrImage.style.opacity = '1';
-    document.getElementById('qrError').textContent = 'Mengulang… (' + e.message + ')';
+/**
+ * Refresh QR:
+ * 1) Kalau punya token, coba load /?ajaxofficeqr=TOKEN
+ * 2) Kalau gagal / tidak ada token, re-verify office (dengan PIN jika ada) untuk dapat token baru
+ */
+function refreshQrCode(){
+  if(refreshInFlight || !selectedOffice) return;
+  refreshInFlight = true;
+
+  const tryToken = () => {
+    if(!currentQrToken) return Promise.reject(new Error('no token'));
+    return loadQrImage('/?ajaxofficeqr=' + currentQrToken).then(() => {
+      // loadQrImage sudah set error text jika gagal; cek apakah error masih ada
+      if(document.getElementById('qrError').textContent) throw new Error('load gagal');
+    });
+  };
+
+  const reVerify = () => {
+    let path = '/?ajaxverifyoffice=' + selectedOffice.id;
+    if(lastPin) path += '&pin=' + encodeURIComponent(lastPin);
+    return fetch(apiUrl(path), {credentials:'include'})
+      .then(r => r.text())
+      .then(html => {
+        if(html.trim() === '0'){
+          document.getElementById('qrError').textContent = 'Sesi habis — masukkan PIN lagi';
+          return;
+        }
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const img = doc.querySelector('.officeqr');
+        if(img){
+          const src = img.getAttribute('src') || '';
+          const m = src.match(/ajaxofficeqr=([^&"']+)/);
+          if(m) currentQrToken = m[1];
+          return loadQrImage(src);
+        }
+        document.getElementById('qrError').textContent = 'QR tidak tersedia';
+      });
+  };
+
+  tryToken()
+    .catch(() => reVerify())
+    .catch(() => {
+      document.getElementById('qrError').textContent = 'Gagal memuat QR — mencoba ulang…';
+    })
+    .finally(() => { refreshInFlight = false; });
+}
+
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && qrRefreshInterval){
+    refreshQrCode();
+    qrCountdown = 3;
+    qrCountdownEl.textContent = '3';
   }
-}
+});
 
-// Tutup modal saat klik area gelap
-[officeModal, document.getElementById('pinModal'), document.getElementById('qrModal')].forEach(m=>{
-  m.addEventListener('click', e=>{ if(e.target===m){ m.classList.add('hidden'); if(m.id==='qrModal') stopQrAutoRefresh(); } });
+/* ============================================================
+   TOMBOL MULAI
+   ============================================================ */
+document.getElementById('btnStart').addEventListener('click', openOfficeModal);
+
+[officeModal, pinModal, qrModal].forEach(m => {
+  m.addEventListener('click', e => {
+    if(e.target === m){
+      m.classList.add('hidden');
+      if(m === qrModal) stopQrAutoRefresh();
+    }
+  });
 });
 </script>
 </body>
