@@ -352,25 +352,32 @@ function toProxyImageUrl(src){
   return apiUrl('/' + src);
 }
 
-/** Load QR via fetch (credentials) → blob URL, agar cookie session ikut */
+/** Load QR via fetch (credentials) → blob URL.
+ *  PeopleBond sering kirim PNG dengan Content-Type: text/html —
+ *  deteksi gambar lewat magic bytes, bukan header. */
 function loadQrImage(srcPath){
   const url = toProxyImageUrl(srcPath);
   qrImage.style.opacity = '0.4';
   return fetch(url, {credentials:'include', cache:'no-store'})
     .then(r => {
       if(!r.ok) throw new Error('HTTP ' + r.status);
-      const ct = (r.headers.get('content-type') || '').toLowerCase();
-      // Kalau proxy mengembalikan HTML (login page), anggap gagal
-      if(ct.includes('text/html')) throw new Error('bukan gambar');
-      return r.blob();
+      return r.arrayBuffer();
     })
-    .then(blob => {
-      // Pastikan benar-benar image
-      if(!blob.type.startsWith('image/') && blob.size < 100){
-        throw new Error('respon bukan gambar');
+    .then(buf => {
+      const bytes = new Uint8Array(buf);
+      if(bytes.length < 8) throw new Error('respon kosong');
+
+      // PNG: 89 50 4E 47  |  JPEG: FF D8 FF  |  GIF: 47 49 46
+      const isPng  = bytes[0]===0x89 && bytes[1]===0x50 && bytes[2]===0x4E && bytes[3]===0x47;
+      const isJpeg = bytes[0]===0xFF && bytes[1]===0xD8 && bytes[2]===0xFF;
+      const isGif  = bytes[0]===0x47 && bytes[1]===0x49 && bytes[2]===0x46;
+
+      if(!isPng && !isJpeg && !isGif){
+        throw new Error('bukan gambar (session?)');
       }
-      // Beberapa proxy mengembalikan image tanpa content-type image/*
-      // Cek magic bytes PNG/JPEG via partial check size
+
+      const mime = isPng ? 'image/png' : isJpeg ? 'image/jpeg' : 'image/gif';
+      const blob = new Blob([buf], {type: mime});
       revokeBlob();
       currentBlobUrl = URL.createObjectURL(blob);
       qrImage.src = currentBlobUrl;
