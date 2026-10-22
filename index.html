@@ -1,533 +1,409 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absensi HRD Gedo</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        
-        body {
-            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 420px;
-            padding: 30px 25px;
-            text-align: center;
-        }
-
-        .header-icon { font-size: 40px; margin-bottom: 10px; }
-        h1 { color: #00695c; font-size: 26px; margin-bottom: 5px; }
-        h1 span { color: #f57c00; }
-        .subtitle { color: #666; font-size: 15px; margin-bottom: 35px; line-height: 1.5; }
-
-        .feature-card {
-            background: #f8fafa;
-            border-radius: 14px;
-            padding: 18px;
-            margin-bottom: 14px;
-            text-align: left;
-            border: 1px solid #eee;
-        }
-        .feature-title { font-weight: 600; color: #333; font-size: 16px; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
-        .feature-desc { font-size: 13px; color: #888; margin-left: 34px; }
-        .feature-icon { font-size: 20px; }
-
-        .btn-primary {
-            width: 100%;
-            padding: 15px;
-            background: #00897b;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 10px;
-        }
-        .btn-primary:hover { background: #00796b; transform: translateY(-1px); }
-        .btn-primary:disabled { background: #4db6ac; cursor: not-allowed; transform: none; }
-
-        /* Modal PIN */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            z-index: 100;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal {
-            background: white;
-            border-radius: 20px;
-            padding: 30px 25px;
-            width: 100%;
-            max-width: 360px;
-            transform: translateY(20px);
-            transition: transform 0.3s;
-        }
-        .modal-overlay.active .modal { transform: translateY(0); }
-        .modal-icon { font-size: 40px; color: #00897b; margin-bottom: 10px; }
-        .modal h2 { font-size: 22px; color: #333; margin-bottom: 5px; }
-        .modal .office-name { color: #666; font-size: 15px; margin-bottom: 25px; }
-        .pin-input-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-        .pin-box {
-            width: 45px;
-            height: 50px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 22px;
-            text-align: center;
-            font-weight: 600;
-            color: #333;
-        }
-        .pin-box:focus { outline: none; border-color: #00897b; }
-        .modal-buttons { display: flex; gap: 12px; }
-        .btn-secondary {
-            flex: 1;
-            padding: 13px;
-            background: #f0f0f0;
-            color: #555;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        .btn-verify {
-            flex: 1;
-            padding: 13px;
-            background: #4db6ac;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-verify.active { background: #00897b; }
-        .btn-verify:disabled { background: #ccc; cursor: not-allowed; }
-
-        /* QR Page */
-        .qrcode-page {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            z-index: 200;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-        .qrcode-page.active { opacity: 1; visibility: visible; }
-        .qr-container {
-            background: white;
-            border-radius: 24px;
-            padding: 30px 25px;
-            width: 100%;
-            max-width: 360px;
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        }
-        .live-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        .live-dot {
-            width: 8px;
-            height: 8px;
-            background: #4caf50;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%,100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-        .qr-container h2 { font-size: 20px; color: #333; margin-bottom: 5px; }
-        .qr-subtitle { font-size: 14px; color: #888; margin-bottom: 25px; }
-        
-        .qrcode-wrapper {
-            background: #fafafa;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            min-height: 220px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .qrcode-wrapper img {
-            max-width: 220px;
-            width: 100%;
-            border-radius: 6px;
-        }
-        .qrcode-wrapper .placeholder {
-            color: #888;
-            font-size: 14px;
-        }
-
-        .time-display {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        .status-text {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 25px;
-        }
-        .btn-close {
-            background: #e0e0e0;
-            color: #444;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 8px;
-            font-size: 15px;
-            cursor: pointer;
-        }
-
-        .hidden { display: none !important; }
-        .loading-spinner {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            border: 3px solid #ddd;
-            border-top-color: #00897b;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Select dropdown */
-        .select-wrapper {
-            position: relative;
-            margin-bottom: 25px;
-        }
-        select {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 15px;
-            background: white;
-            appearance: none;
-            cursor: pointer;
-        }
-        select:focus { outline: none; border-color: #00897b; }
-        .select-arrow {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            color: #888;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Absensi HRD Gedo — QR Attendance</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7fcf9; --card:#ffffff; --text:#0f172a; --muted:#64748b;
+    --accent:#0d9669; --accent-soft:rgba(13,150,105,.14);
+    --accent2:#d4724a; --border:rgba(15,23,42,.08);
+  }
+  *{box-sizing:border-box}
+  body{font-family:'Figtree',system-ui,sans-serif;background:var(--bg);color:var(--text);margin:0;line-height:1.6}
+  .btn-primary{background:var(--accent);color:#fff;font-weight:700;border-radius:14px;padding:14px 28px;font-size:16px;border:none;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 14px rgba(13,150,105,.35)}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(13,150,105,.45)}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:8px 16px;cursor:pointer;font-weight:600}
+  .btn-ghost:hover{color:var(--text);border-color:var(--accent)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+  .office-btn{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 12px;cursor:pointer;text-align:left;font-weight:600;color:var(--text);font-size:14px;transition:all .15s;width:100%}
+  .office-btn:hover{border-color:var(--accent);background:var(--accent-soft);transform:translateY(-1px)}
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+  .modal-box{background:var(--card);border-radius:20px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:pop .25s ease}
+  @keyframes pop{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .qr-img{width:260px;height:260px;max-width:80vw;max-height:80vw;border-radius:16px;border:6px solid #fff;box-shadow:0 4px 20px rgba(0,0,0,.12);transition:opacity .3s}
+  .live-clock{font-variant-numeric:tabular-nums}
+  .countdown-badge{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;font-weight:800;font-size:20px;background:var(--accent-soft);color:var(--accent)}
+  .countdown-badge.warn{background:rgba(220,53,69,.12);color:#dc3545}
+  .spinner{width:22px;height:22px;border:3px solid var(--accent-soft);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .status-pill{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent)}
+  .status-pill.err{background:rgba(220,53,69,.1);color:#dc3545;border-color:#dc3545}
+  input[type=text],input[type=password]{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:12px;font-size:15px;outline:none;transition:border-color .15s;font-family:inherit}
+  input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .hidden{display:none!important}
+</style>
 </head>
 <body>
-    <!-- Halaman Utama -->
-    <div class="container" id="mainPage">
-        <div class="header-icon">📱</div>
-        <h1>Absensi HRD <span>Gedo</span></h1>
-        <p class="subtitle">Pilih lokasi office, masukkan PIN, dan QR Code muncul seketika — diperbarui otomatis setiap 3 detik.</p>
 
-        <button class="btn-primary" id="startBtn">▶ QR Attendance</button>
-        <p style="margin-top: 15px; font-size: 13px; color: #888;" id="statusText">Siap — klik tombol di atas untuk mulai</p>
-
-        <div class="feature-card" style="margin-top: 30px;">
-            <div class="feature-title"><span class="feature-icon">📍</span> Pilih Lokasi</div>
-            <p class="feature-desc">Cari & pilih outlet tempat absensi</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-title"><span class="feature-icon">🔒</span> Masukkan PIN</div>
-            <p class="feature-desc">Verifikasi PIN office 6 digit</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-title"><span class="feature-icon">🔄</span> QR Instan</div>
-            <p class="feature-desc">Muncul seketika, auto-refresh 3 detik</p>
-        </div>
+<!-- ===== HEADER / HERO ===== -->
+<div style="background:radial-gradient(800px 400px at 20% -10%, var(--accent-soft), transparent 70%), var(--bg);border-bottom:1px solid var(--border)">
+  <div style="max-width:720px;margin:0 auto;padding:48px 20px 40px;text-align:center">
+    <div style="display:inline-flex;align-items:center;gap:10px;background:var(--accent-soft);color:var(--accent);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:18px;border:1px solid var(--accent)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v3M14 20h3M20 20h1"/></svg>
+      QR Attendance System
     </div>
-
-    <!-- Modal Pilih Outlet & PIN -->
-    <div class="modal-overlay" id="pinModal">
-        <div class="modal">
-            <div class="modal-icon">🔒</div>
-            <h2>PIN Office</h2>
-            <p class="office-name" id="modalOfficeName"></p>
-            
-            <div class="pin-input-container">
-                <input type="password" class="pin-box" maxlength="1" data-index="0">
-                <input type="password" class="pin-box" maxlength="1" data-index="1">
-                <input type="password" class="pin-box" maxlength="1" data-index="2">
-                <input type="password" class="pin-box" maxlength="1" data-index="3">
-                <input type="password" class="pin-box" maxlength="1" data-index="4">
-                <input type="password" class="pin-box" maxlength="1" data-index="5">
-            </div>
-            
-            <div class="modal-buttons">
-                <button class="btn-secondary" id="modalBatal">Batal</button>
-                <button class="btn-verify" id="modalVerifikasi" disabled>Verifikasi</button>
-            </div>
-        </div>
+    <h1 style="font-size:clamp(28px,5vw,42px);font-weight:800;margin:0 0 10px;line-height:1.15">Absensi HRD <span style="background:linear-gradient(100deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent">Gedo</span></h1>
+    <p style="color:var(--muted);margin:0 auto 28px;max-width:460px;font-size:15px">Pindai QR Code untuk absensi karyawan. Pilih lokasi office, masukkan PIN, dan tampilkan QR yang diperbarui otomatis setiap 3 detik.</p>
+    <button id="btnStart" class="btn-primary">
+      <span id="btnStartLabel">Mulai QR Attendance</span>
+    </button>
+    <div style="margin-top:16px;font-size:12px;color:var(--muted)">
+      Server: <code id="serverLabel" style="background:rgba(0,0,0,.05);padding:2px 8px;border-radius:6px;font-size:11px">memuat…</code>
+      <span id="connStatus" class="status-pill" style="margin-left:8px">cek koneksi…</span>
     </div>
+  </div>
+</div>
 
-    <!-- Halaman QR Code -->
-    <div class="qrcode-page" id="qrPage">
-        <div class="qr-container">
-            <div class="live-badge"><div class="live-dot"></div> LIVE</div>
-            <h2 id="qrOfficeName"></h2>
-            <p class="qr-subtitle" id="qrDate"></p>
-            
-            <div class="qrcode-wrapper">
-                <div id="qrPlaceholder" class="placeholder">Memuat QR Code...</div>
-                <img id="qrImage" style="display:none;" alt="QR Attendance">
-            </div>
-            
-            <div class="time-display" id="qrTime">--:--:--</div>
-            <p class="status-text" id="qrStatus">🔄 Memperbarui setiap 3 detik...</p>
-            
-            <button class="btn-close" id="qrTutup">Tutup</button>
-        </div>
+<!-- ===== INFO CARDS ===== -->
+<div style="max-width:720px;margin:28px auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:14px">
+  <div class="card" style="flex:1;min-width:200px;padding:18px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div style="width:34px;height:34px;border-radius:10px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--accent)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <strong style="font-size:14px">Pilih Lokasi</strong>
     </div>
-
-    <!-- Pilih Outlet Modal -->
-    <div class="modal-overlay" id="selectModal">
-        <div class="modal">
-            <h2 style="margin-bottom: 20px;">Pilih Outlet</h2>
-            <div class="select-wrapper">
-                <select id="officeSelect">
-                    <option value="">Memuat daftar...</option>
-                </select>
-            </div>
-            <div class="modal-buttons">
-                <button class="btn-secondary" id="selectBatal">Batal</button>
-                <button class="btn-verify" id="selectLanjut">Lanjut</button>
-            </div>
-        </div>
+    <p style="font-size:13px;color:var(--muted);margin:0">Pilih office / outlet tempat absensi akan dilakukan.</p>
+  </div>
+  <div class="card" style="flex:1;min-width:200px;padding:18px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div style="width:34px;height:34px;border-radius:10px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--accent)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      </div>
+      <strong style="font-size:14px">Masukkan PIN</strong>
     </div>
+    <p style="font-size:13px;color:var(--muted);margin:0">Beberapa lokasi memerlukan PIN office 6 digit.</p>
+  </div>
+  <div class="card" style="flex:1;min-width:200px;padding:18px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div style="width:34px;height:34px;border-radius:10px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--accent)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      </div>
+      <strong style="font-size:14px">Auto Refresh</strong>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin:0">QR diperbarui otomatis setiap 3 detik agar aman.</p>
+  </div>
+</div>
 
-    <script>
-        const API_BASE = '/api/proxy.js?path=';
-        let qrRefreshTimer = null;
-        let selectedOfficeId = null;
-        let selectedOfficeName = null;
+<div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">
+  Absensi HRD Gedo · terhubung ke PeopleBond HCMS
+</div>
 
-        window.addEventListener('load', () => {
-            loadOffices();
-            updateDateTime();
-            setInterval(updateDateTime, 1000);
+<!-- ===== MODAL: PILIH OFFICE ===== -->
+<div id="officeModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="margin:0;font-size:20px;font-weight:800">Pilih Lokasi Office</h2>
+      <button class="btn-ghost" onclick="closeOfficeModal()" style="padding:6px 12px">Tutup</button>
+    </div>
+    <input type="text" id="officeSearch" placeholder="Cari nama office…" autocomplete="off">
+    <div id="officeGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:16px">
+      <div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted)"><span class="spinner"></span> Memuat daftar office…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: PIN ===== -->
+<div id="pinModal" class="modal-overlay hidden">
+  <div class="modal-box" style="max-width:380px;text-align:center">
+    <div style="width:56px;height:56px;border-radius:16px;background:var(--accent-soft);display:inline-flex;align-items:center;justify-content:center;color:var(--accent);margin-bottom:14px">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    </div>
+    <h2 style="margin:0 0 6px;font-size:20px;font-weight:800">PIN Office</h2>
+    <p id="pinOfficeName" style="color:var(--muted);font-size:14px;margin:0 0 18px"></p>
+    <input type="password" id="pinInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Masukkan 6 digit PIN" autocomplete="off" style="text-align:center;font-size:22px;letter-spacing:.4em;font-weight:700">
+    <p id="pinError" style="color:#dc3545;font-size:13px;margin:10px 0 0;min-height:18px"></p>
+    <div style="display:flex;gap:10px;margin-top:18px">
+      <button class="btn-ghost" style="flex:1;padding:12px" onclick="closePinModal()">Batal</button>
+      <button id="pinSubmit" class="btn-primary" style="flex:1;padding:12px;font-size:15px">Verifikasi</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: QR CODE ===== -->
+<div id="qrModal" class="modal-overlay hidden">
+  <div class="modal-box" style="max-width:440px;text-align:center">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span class="status-pill">● LIVE</span>
+      <button class="btn-ghost" onclick="closeQrModal()" style="padding:6px 12px">Tutup</button>
+    </div>
+    <h2 id="qrOfficeName" style="margin:0 0 4px;font-size:22px;font-weight:800"></h2>
+    <div class="live-clock" style="color:var(--muted);font-size:14px;margin-bottom:16px">
+      <span id="liveDate"></span> · <strong id="liveTime" style="color:var(--text);font-size:16px"></strong>
+    </div>
+    <div style="position:relative;display:inline-block;margin-bottom:14px">
+      <img id="qrImage" class="qr-img" alt="QR Attendance" crossorigin="anonymous">
+      <div style="position:absolute;top:-10px;right:-10px" class="countdown-badge" id="qrCountdown">3</div>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin:0">Minta karyawan memindai QR ini dengan aplikasi HR. QR berganti otomatis setiap <strong>3 detik</strong>.</p>
+    <p id="qrError" style="color:#dc3545;font-size:13px;margin-top:10px;min-height:18px"></p>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   KONFIGURASI — ubah sesuai kebutuhan
+   ============================================================ */
+// Jika di-host di domain SAMA dengan hr.yeusaigongroup.com, kosongkan ('')
+// Jika di-host di domain berbeda, gunakan proxy.php (default)
+const PROXY = 'proxy.php?path=';
+const TARGET_BASE = 'https://hr.yeusaigongroup.com';
+// Jika TIDAK pakai proxy (same-origin), set API_BASE = '' dan panggil langsung
+const API_BASE = '/api/proxy?path='; // Vercel serverless (same-origin), 'proxy.php?path=' = lewat proxy
+
+function apiUrl(pathAndQuery){
+  // pathAndQuery contoh: '/?ajaxoffices=1'
+  if(API_BASE === '') return pathAndQuery;
+  return API_BASE + encodeURIComponent(pathAndQuery);
+}
+
+document.getElementById('serverLabel').textContent = API_BASE === '' ? 'direct (same-origin)' : 'via proxy.php';
+
+/* ============================================================
+   CEK KONEKSI AWAL
+   ============================================================ */
+(function checkConn(){
+  const s = document.getElementById('connStatus');
+  fetch(apiUrl('/?ajaxoffices=1'), {credentials:'include'})
+    .then(r => { if(r.ok){ s.textContent='terhubung'; s.classList.remove('err'); } else { s.textContent='error '+r.status; s.classList.add('err'); } })
+    .catch(e => { s.textContent='gagal terhubung'; s.classList.add('err'); });
+})();
+
+/* ============================================================
+   MODAL OFFICE — ambil daftar & render
+   ============================================================ */
+const officeModal = document.getElementById('officeModal');
+const officeGrid = document.getElementById('officeGrid');
+let currentOffices = [];
+
+function openOfficeModal(){
+  officeModal.classList.remove('hidden');
+  loadOffices('');
+}
+function closeOfficeModal(){ officeModal.classList.add('hidden'); stopQrAutoRefresh(); }
+
+function loadOffices(query){
+  officeGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted)"><span class="spinner"></span> Memuat…</div>';
+  const url = query ? '/?ajaxoffices=1&officeQuery=' + encodeURIComponent(query) : '/?ajaxoffices=1';
+  fetch(apiUrl(url), {credentials:'include'})
+    .then(r => r.text())
+    .then(html => {
+      // Parse tombol office dari respons HTML: onclick='selectOffice({id: X, name: `Nama`})'
+      const offices = [];
+      const re = /selectOffice\(\{\s*id\s*:\s*(\d+)\s*,\s*name\s*:\s*`([^`]+)`\s*\}\)/g;
+      let m;
+      while((m = re.exec(html)) !== null){
+        offices.push({id: m[1], name: m[2]});
+      }
+      currentOffices = offices;
+      renderOffices(offices);
+    })
+    .catch(e => {
+      officeGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:#dc3545">Gagal memuat daftar office. Periksa koneksi / proxy.</div>';
+    });
+}
+
+function renderOffices(list){
+  if(!list.length){ officeGrid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted)">Tidak ada office ditemukan.</div>'; return; }
+  officeGrid.innerHTML = list.map(o =>
+    '<button class="office-btn" data-id="'+o.id+'" data-name="'+o.name.replace(/"/g,'&quot;')+'">'+o.name+'</button>'
+  ).join('');
+  officeGrid.querySelectorAll('.office-btn').forEach(btn => {
+    btn.addEventListener('click', () => selectOffice(btn.dataset.id, btn.dataset.name));
+  });
+}
+
+// Search dengan debounce
+let searchTimer = null;
+document.getElementById('officeSearch').addEventListener('input', function(){
+  clearTimeout(searchTimer);
+  const val = this.value;
+  searchTimer = setTimeout(() => loadOffices(val), 400);
+});
+
+/* ============================================================
+   PILIH OFFICE → cek PIN → tampilkan QR
+   ============================================================ */
+let selectedOffice = null;
+
+function selectOffice(id, name){
+  selectedOffice = {id, name};
+  closeOfficeModal();
+  // Cek apakah butuh PIN
+  fetch(apiUrl('/?ajaxverifyoffice=' + id), {credentials:'include'})
+    .then(r => r.text())
+    .then(data => {
+      if(data.trim() === '0'){
+        // Butuh PIN
+        openPinModal(name);
+      } else {
+        // Langsung tampilkan QR
+        showQrModal(name, data);
+      }
+    })
+    .catch(e => alert('Gagal terhubung ke server: ' + e.message));
+}
+
+/* ============================================================
+   MODAL PIN
+   ============================================================ */
+const pinModal = document.getElementById('pinModal');
+const pinInput = document.getElementById('pinInput');
+const pinError = document.getElementById('pinError');
+
+function openPinModal(name){
+  document.getElementById('pinOfficeName').textContent = name;
+  pinInput.value = ''; pinError.textContent = '';
+  pinModal.classList.remove('hidden');
+  setTimeout(() => pinInput.focus(), 100);
+}
+function closePinModal(){ pinModal.classList.add('hidden'); }
+
+pinInput.addEventListener('keydown', e => { if(e.key === 'Enter') submitPin(); });
+document.getElementById('pinSubmit').addEventListener('click', submitPin);
+
+function submitPin(){
+  const pin = pinInput.value.trim();
+  const btn = document.getElementById('pinSubmit');
+  if(!pin || pin.length < 4){ pinError.textContent = 'PIN tidak boleh kosong'; return; }
+  pinError.textContent = '';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  // Validasi PIN dulu
+  fetch(apiUrl('/?onlyvalidate=1&ajaxverifyoffice=' + selectedOffice.id + '&pin=' + encodeURIComponent(pin)), {credentials:'include'})
+    .then(r => r.text())
+    .then(data => {
+      if(data.trim() === '0'){
+        pinError.textContent = 'PIN Office Anda tidak sesuai';
+        btn.disabled = false; btn.textContent = 'Verifikasi';
+        return;
+      }
+      // PIN benar → ambil QR
+      return fetch(apiUrl('/?ajaxverifyoffice=' + selectedOffice.id + '&pin=' + encodeURIComponent(pin)), {credentials:'include'})
+        .then(r => r.text())
+        .then(qrHtml => {
+          closePinModal();
+          showQrModal(selectedOffice.name, qrHtml);
         });
+    })
+    .catch(e => { pinError.textContent = 'Gagal terhubung: ' + e.message; })
+    .finally(() => { btn.disabled = false; btn.textContent = 'Verifikasi'; });
+}
 
-        function updateDateTime() {
-            const now = new Date();
-            document.getElementById('qrTime').textContent = now.toLocaleTimeString('id-ID', { hour12: false });
-            document.getElementById('qrDate').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-        }
+/* ============================================================
+   MODAL QR — tampilkan + auto refresh 3 detik + live clock
+   ============================================================ */
+const qrModal = document.getElementById('qrModal');
+const qrImage = document.getElementById('qrImage');
+const qrCountdownEl = document.getElementById('qrCountdown');
+let qrRefreshInterval = null, qrCountdownInterval = null, qrClockInterval = null;
+let qrCountdown = 3;
 
-        async function loadOffices() {
-            try {
-                const res = await fetch(`${API_BASE}?ajaxoffices=1`);
-                const text = await res.text();
-                
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(text, 'text/html');
-                const options = doc.querySelectorAll('option');
-                const select = document.getElementById('officeSelect');
-                select.innerHTML = '<option value="">-- Pilih Outlet --</option>';
-                
-                options.forEach(opt => {
-                    if (opt.value && opt.value !== '0') {
-                        select.innerHTML += `<option value="${opt.value}">${opt.textContent}</option>`;
-                    }
-                });
-                
-                document.getElementById('statusText').textContent = `✅ ${options.length} outlet dimuat`;
-            } catch (err) {
-                document.getElementById('statusText').textContent = '❌ Gagal memuat outlet';
-                console.error(err);
-            }
-        }
+function showQrModal(officeName, qrHtml){
+  document.getElementById('qrOfficeName').textContent = officeName;
+  document.getElementById('qrError').textContent = '';
+  qrModal.classList.remove('hidden');
 
-        // Buka pilih outlet
-        document.getElementById('startBtn').addEventListener('click', () => {
-            document.getElementById('selectModal').classList.add('active');
-        });
+  // Ekstrak src gambar QR dari HTML respons (img.officeqr)
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(qrHtml, 'text/html');
+  const img = doc.querySelector('.officeqr');
+  if(img){
+    // src bisa relatif (/?ajaxofficeqr=...) — ubah ke lewat proxy
+    let src = img.getAttribute('src') || img.src;
+    qrImage.src = toProxyImageUrl(src);
+  } else {
+    // Fallback: langsung panggil endpoint QR
+    refreshQrCode();
+  }
 
-        // Pilih lanjut
-        document.getElementById('selectLanjut').addEventListener('click', () => {
-            const select = document.getElementById('officeSelect');
-            if (!select.value) return alert('Pilih outlet dulu!');
-            
-            selectedOfficeId = select.value;
-            selectedOfficeName = select.selectedOptions[0].text;
-            
-            document.getElementById('selectModal').classList.remove('active');
-            document.getElementById('modalOfficeName').textContent = selectedOfficeName;
-            document.getElementById('pinModal').classList.add('active');
-            
-            // Reset PIN
-            document.querySelectorAll('.pin-box').forEach(b => { b.value = ''; });
-            document.querySelector('.pin-box').focus();
-        });
+  startQrAutoRefresh();
+}
 
-        // Batal pilih
-        document.getElementById('selectBatal').addEventListener('click', () => {
-            document.getElementById('selectModal').classList.remove('active');
-        });
+function toProxyImageUrl(src){
+  if(!src) return apiUrl('/?ajaxofficeqr=' + Date.now());
+  // Jika sudah absolute ke target, ambil path-nya saja
+  if(src.startsWith('http')){
+    try{ const u = new URL(src); src = u.pathname + u.search; }catch(e){}
+  }
+  if(src.startsWith('/')) return apiUrl(src);
+  return apiUrl('/' + src);
+}
 
-        // PIN input handling
-        const pinBoxes = document.querySelectorAll('.pin-box');
-        pinBoxes.forEach((box, idx) => {
-            box.addEventListener('input', (e) => {
-                if (e.target.value) {
-                    if (idx < 5) pinBoxes[idx + 1].focus();
-                }
-                checkPinComplete();
-            });
-            box.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && !e.target.value && idx > 0) {
-                    pinBoxes[idx - 1].focus();
-                }
-            });
-        });
+function closeQrModal(){
+  qrModal.classList.add('hidden');
+  stopQrAutoRefresh();
+}
 
-        function checkPinComplete() {
-            const pin = getPinValue();
-            document.getElementById('modalVerifikasi').disabled = pin.length !== 6;
-            document.getElementById('modalVerifikasi').classList.toggle('active', pin.length === 6);
-        }
+function updateLiveClock(){
+  const now = new Date();
+  const dateEl = document.getElementById('liveDate');
+  const timeEl = document.getElementById('liveTime');
+  if(dateEl) dateEl.textContent = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  if(timeEl){
+    timeEl.textContent = String(now.getHours()).padStart(2,'0') + ':' +
+                        String(now.getMinutes()).padStart(2,'0') + ':' +
+                        String(now.getSeconds()).padStart(2,'0');
+  }
+}
 
-        function getPinValue() {
-            return Array.from(pinBoxes).map(b => b.value).join('');
-        }
+function startQrAutoRefresh(){
+  qrCountdown = 3;
+  stopQrAutoRefresh();
+  updateLiveClock();
+  qrClockInterval = setInterval(updateLiveClock, 1000);
+  qrCountdownInterval = setInterval(() => {
+    qrCountdown--;
+    qrCountdownEl.textContent = qrCountdown;
+    qrCountdownEl.classList.toggle('warn', qrCountdown <= 1);
+    if(qrCountdown <= 0) qrCountdown = 3;
+  }, 1000);
+  qrRefreshInterval = setInterval(refreshQrCode, 3000);
+}
 
-        // Batal PIN
-        document.getElementById('modalBatal').addEventListener('click', () => {
-            document.getElementById('pinModal').classList.remove('active');
-        });
+function stopQrAutoRefresh(){
+  if(qrRefreshInterval) clearInterval(qrRefreshInterval);
+  if(qrCountdownInterval) clearInterval(qrCountdownInterval);
+  if(qrClockInterval) clearInterval(qrClockInterval);
+  qrRefreshInterval = qrCountdownInterval = qrClockInterval = null;
+}
 
-        // Verifikasi PIN
-        document.getElementById('modalVerifikasi').addEventListener('click', async () => {
-            const pin = getPinValue();
-            const btn = document.getElementById('modalVerifikasi');
-            btn.textContent = 'Memverifikasi...';
-            btn.disabled = true;
-            
-            try {
-                // Ambil QR langsung dalam satu permintaan
-                const url = `${API_BASE}?ajaxverifyoffice=${encodeURIComponent(selectedOfficeId)}&pin=${encodeURIComponent(pin)}`;
-                const res = await fetch(url, { cache: 'no-store' });
-                const html = await res.text();
-                
-                if (html.trim() === '0') {
-                    alert('❌ PIN salah!');
-                    pinBoxes.forEach(b => b.value = '');
-                    pinBoxes[0].focus();
-                    return;
-                }
-                
-                // Berhasil — buka halaman QR
-                document.getElementById('pinModal').classList.remove('active');
-                document.getElementById('qrOfficeName').textContent = selectedOfficeName;
-                document.getElementById('qrPage').classList.add('active');
-                
-                // Tampil QR pertama kali
-                displayQR(html);
-                
-                // Auto refresh tiap 3 detik
-                qrRefreshTimer = setInterval(() => refreshQR(pin), 3000);
-                
-            } catch (err) {
-                alert('Error: ' + err.message);
-            } finally {
-                btn.textContent = 'Verifikasi';
-                btn.disabled = false;
-            }
-        });
+function refreshQrCode(){
+  const cacheBuster = Date.now() + '_' + Math.random().toString(36).substr(2,9);
+  const newSrc = apiUrl('/?ajaxofficeqr=' + cacheBuster);
+  const preload = new Image();
+  preload.crossOrigin = 'anonymous';
+  qrImage.style.opacity = '0.4';
+  preload.onload = function(){ qrImage.src = newSrc; qrImage.style.opacity = '1'; document.getElementById('qrError').textContent = ''; };
+  preload.onerror = function(){
+    qrImage.style.opacity = '1';
+    document.getElementById('qrError').textContent = 'Gagal memuat QR — mencoba ulang…';
+  };
+  preload.src = newSrc;
+}
 
-        function displayQR(html) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const img = doc.querySelector('img');
-            
-            if (img && img.src) {
-                let src = img.src;
-                if (src.startsWith('/')) {
-                    src = 'https://hr.yeusaigongroup.com' + src;
-                }
-                src = src + (src.includes('?') ? '&' : '?') + 't=' + Date.now();
-                
-                document.getElementById('qrPlaceholder').style.display = 'none';
-                document.getElementById('qrImage').style.display = 'block';
-                document.getElementById('qrImage').src = src;
-                document.getElementById('qrStatus').textContent = '✅ Aktif — diperbarui tiap 3 detik';
-            } else {
-                document.getElementById('qrPlaceholder').style.display = 'block';
-                document.getElementById('qrPlaceholder').textContent = '⚠️ QR tidak tersedia';
-                document.getElementById('qrImage').style.display = 'none';
-                document.getElementById('qrStatus').textContent = '⚠️ Coba periksa ulang PIN';
-            }
-        }
+// Refresh saat tab kembali aktif
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && qrRefreshInterval){
+    refreshQrCode();
+    qrCountdown = 3;
+    qrCountdownEl.textContent = '3';
+  }
+});
 
-        async function refreshQR(pin) {
-            try {
-                const url = `${API_BASE}?ajaxverifyoffice=${encodeURIComponent(selectedOfficeId)}&pin=${encodeURIComponent(pin)}`;
-                const res = await fetch(url + '&t=' + Date.now(), { cache: 'no-store' });
-                const html = await res.text();
-                displayQR(html);
-            } catch (err) {
-                document.getElementById('qrStatus').textContent = '🔄 Menyambungkan ulang...';
-            }
-        }
+/* ============================================================
+   TOMBOL MULAI
+   ============================================================ */
+document.getElementById('btnStart').addEventListener('click', openOfficeModal);
 
-        // Tutup QR
-        document.getElementById('qrTutup').addEventListener('click', () => {
-            if (qrRefreshTimer) clearInterval(qrRefreshTimer);
-            document.getElementById('qrPage').classList.remove('active');
-            document.getElementById('qrImage').src = '';
-        });
-    </script>
+// Tutup modal saat klik overlay
+[officeModal, pinModal, qrModal].forEach(m => {
+  m.addEventListener('click', e => { if(e.target === m){ m.classList.add('hidden'); if(m === qrModal) stopQrAutoRefresh(); } });
+});
+</script>
 </body>
 </html>
